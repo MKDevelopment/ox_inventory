@@ -1,11 +1,21 @@
-$mainColor: #22232c;
-$textColor: #c1c2c5;
-$mainFont: Roboto;
+// MyStoryRP theme (mystoryrp.com)
+$mainColor: #0f0d17;
+$textColor: #e7e5f0;
+$mutedTextColor: #8b879c;
+$mainFont: Inter;
+$headingFont: Poppins;
 
-$secondaryColor: rgba(12, 12, 12, 0.4);
-$secondaryColorHighlight: #33343f;
-$secondaryColorLight: rgba(0, 0, 0, 0.5);
-$secondaryColorDark: rgba(12, 12, 12, 0.8);
+$accentColor: #6d4aff;
+$accentColorLight: #8b6dff;
+$accentColorSoft: rgba(109, 74, 255, 0.14);
+$secondaryAccentColor: #f5a443;
+$borderColor: #231f35;
+$radius: 8px;
+
+$secondaryColor: rgba(15, 13, 23, 0.82);
+$secondaryColorHighlight: #1c1830;
+$secondaryColorLight: rgba(15, 13, 23, 0.6);
+$secondaryColorDark: rgba(22, 19, 34, 0.95);
 
 $gridCols: 5;
 $gridRows: 5;
@@ -62,19 +72,20 @@ input[type='number']::-webkit-outer-spin-button {
   background-color: $mainColor;
   color: $textColor;
   padding: 4px;
-  border-color: rgba(0, 0, 0, 0.2);
-  border-style: inset;
-  border-width: 1px;
-  border-radius: 4px;
+  border: 1px solid $borderColor;
+  border-radius: $radius;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
   outline: none;
   display: flex;
   flex-direction: column;
+  font-family: $mainFont;
 }
 
 .context-menu-item {
   padding: 8px;
-  border-radius: 4px;
+  border-radius: 6px;
   background-color: transparent;
+  font-family: $mainFont;
   outline: none;
   border: none;
   color: $textColor;
@@ -85,7 +96,8 @@ input[type='number']::-webkit-outer-spin-button {
     transform: none;
   }
   &:hover {
-    background-color: $secondaryColorHighlight;
+    background-color: $accentColorSoft;
+    color: #fff;
     cursor: pointer;
   }
 }
@@ -151,16 +163,17 @@ body.inv-dragging {
   .inventory-control-input {
     transition: 200ms;
     padding: 16px 8px;
-    border-radius: 2.5%;
+    border-radius: $radius;
     font-family: $mainFont;
     font-size: 16px;
     text-align: center;
     outline: none;
-    border: none;
+    border: 1px solid $borderColor;
     color: #fff;
     background-color: $secondaryColor;
     &:focus-within {
       background-color: $secondaryColorDark;
+      border-color: $accentColor;
     }
   }
 
@@ -170,14 +183,17 @@ body.inv-dragging {
     background-color: $secondaryColor;
     transition: 200ms;
     padding: 12px 8px;
-    border-radius: 2.5%;
-    border: none;
+    border-radius: $radius;
+    border: 1px solid $borderColor;
     text-transform: uppercase;
-    font-family: $mainFont;
+    letter-spacing: 0.06em;
+    font-family: $headingFont;
     width: 100%;
-    font-weight: 500;
+    font-weight: 600;
     &:hover {
-      background-color: $secondaryColorDark;
+      background-color: $accentColor;
+      border-color: $accentColorLight;
+      box-shadow: 0 0 18px rgba(109, 74, 255, 0.35);
     }
   }
 }
@@ -193,7 +209,10 @@ body.inv-dragging {
   display: flex;
   flex-direction: column;
   padding: 16px;
-  border-radius: 4px;
+  border: 1px solid $borderColor;
+  border-radius: 12px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6);
+  font-family: $mainFont;
   gap: 16px;
 }
 
@@ -206,7 +225,10 @@ body.inv-dragging {
   width: 100%;
   justify-content: space-between;
   align-items: center;
+  font-family: $headingFont;
+  font-weight: 700;
   font-size: 18px;
+  color: #fff;
 }
 
 .useful-controls-dialog-close {
@@ -216,7 +238,7 @@ body.inv-dragging {
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 4px;
+  border-radius: 6px;
   fill: $textColor;
   &:hover {
     background-color: $secondaryColorHighlight;
@@ -233,7 +255,7 @@ body.inv-dragging {
 .divider {
   width: 100%;
   height: 1px;
-  background-color: rgba(255, 255, 255, 0.12);
+  background-color: $borderColor;
 }
 
 .useful-controls-button {
@@ -249,10 +271,11 @@ body.inv-dragging {
   justify-content: center;
   align-items: center;
   fill: white;
-  border-radius: 5% !important;
+  border: 1px solid $borderColor !important;
+  border-radius: 10px !important;
   background-color: $secondaryColor !important;
   &:hover {
-    background-color: $secondaryColorDark !important;
+    background-color: $accentColor !important;
     cursor: pointer;
   }
 }
@@ -261,8 +284,8 @@ body.inv-dragging {
   position: absolute !important;
   right: 8px;
   top: 8px;
-  border-radius: 2.5% !important;
-  color: grey !important;
+  border-radius: 6px !important;
+  color: $mutedTextColor !important;
 }
 
 // Dialog is used fro useful controls window
@@ -279,6 +302,14 @@ body.inv-dragging {
   justify-content: space-between;
   p {
     font-size: 16px;
+    font-family: $headingFont;
+    font-weight: 700;
+    color: #fff;
+  }
+  p:last-child {
+    font-family: $mainFont;
+    font-weight: 500;
+    color: $mutedTextColor;
   }
 }
 
@@ -296,25 +327,27 @@ body.inv-dragging {
   background-color: $secondaryColor;
   background-repeat: no-repeat;
   background-position: center;
-  border-radius: 2.5%;
+  border-radius: $radius;
   image-rendering: -webkit-optimize-contrast;
   position: relative;
   background-size: 7vh;
   color: $textColor;
-  border-color: rgba(0, 0, 0, 0.2);
-  border-style: inset;
-  border-width: 1px;
+  border: 1px solid $borderColor;
+  overflow: hidden;
+  transition:
+    border-color 150ms,
+    background-color 150ms;
+  &:hover {
+    border-color: rgba(109, 74, 255, 0.55);
+    background-color: $secondaryColorDark;
+  }
 }
 
 .inventory-slot-label-box {
   background-color: $mainColor;
   color: $textColor;
   text-align: center;
-  border-bottom-left-radius: 0.25vh;
-  border-bottom-right-radius: 0.25vh;
-  border-top-color: rgba(0, 0, 0, 0.2);
-  border-top-style: inset;
-  border-top-width: 1px;
+  border-top: 1px solid $borderColor;
 }
 
 .inventory-slot-label-text {
@@ -323,20 +356,21 @@ body.inv-dragging {
   overflow: hidden;
   text-overflow: ellipsis;
   padding: 2px 3px;
-  font-weight: 400;
+  font-weight: 600;
   font-family: $mainFont;
-  font-size: 12px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
 }
 
 .inventory-slot-number {
-  background-color: white;
-  color: black;
+  background-color: $accentColor;
+  color: #fff;
   height: 12px;
-  border-top-left-radius: 0.25vh;
-  border-bottom-right-radius: 0.25vh;
-  padding: 3px;
+  border-bottom-right-radius: 6px;
+  padding: 3px 5px;
   font-size: 12px;
-  font-family: $mainFont;
+  font-weight: 700;
+  font-family: $headingFont;
 }
 
 .item-slot-wrapper {
@@ -404,13 +438,13 @@ body.inv-dragging {
   min-width: 200px;
   color: $textColor;
   font-family: $mainFont;
-  border-radius: 4px;
-  border-color: rgba(0, 0, 0, 0.2);
-  border-style: inset;
-  border-width: 1px;
+  border-radius: 10px;
+  border: 1px solid $borderColor;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
   p {
     font-size: 12px;
     font-weight: 400;
+    color: $mutedTextColor;
   }
 }
 
@@ -421,7 +455,9 @@ body.inv-dragging {
   align-items: center;
   p {
     font-size: 15px;
-    font-weight: 400;
+    font-family: $headingFont;
+    font-weight: 700;
+    color: #fff;
   }
 }
 
@@ -457,7 +493,7 @@ body.inv-dragging {
 .hotbar-container {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   justify-content: center;
   width: 100%;
   position: absolute;
@@ -493,13 +529,11 @@ body.inv-dragging {
 
 .item-notification-action-box {
   width: 100%;
-  color: $textColor;
-  background-color: $secondaryColor;
+  color: #fff;
+  background-color: $accentColor;
   text-transform: uppercase;
   text-align: center;
-  border-top-left-radius: 0.25vh;
-  border-top-right-radius: 0.25vh;
-  font-family: $mainFont;
+  font-family: $headingFont;
   p {
     font-size: 11px;
     padding: 2px;
@@ -514,16 +548,16 @@ body.inv-dragging {
 }
 
 .durability-bar {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.55);
   height: 3px;
   overflow: hidden;
 }
 
 .weight-bar {
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px inset rgba(0, 0, 0, 0.1);
+  background: $secondaryColor;
+  border: 1px solid $borderColor;
   height: 0.8vh;
-  border-radius: 5%;
+  border-radius: 999px;
   overflow: hidden;
 }
 
