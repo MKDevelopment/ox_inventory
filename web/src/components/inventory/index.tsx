@@ -11,6 +11,7 @@ import LeftInventory from './LeftInventory';
 import Tooltip from '../utils/Tooltip';
 import { closeTooltip } from '../../store/tooltip';
 import InventoryContext from './InventoryContext';
+import MetadataEditor from '../mystory/MetadataEditor';
 import { closeContextMenu } from '../../store/contextMenu';
 import Fade from '../utils/transitions/Fade';
 
@@ -53,6 +54,7 @@ const Inventory: React.FC = () => {
           </div>
           <Tooltip />
           <InventoryContext />
+          <MetadataEditor />
         </div>
       </Fade>
       <InventoryHotbar />

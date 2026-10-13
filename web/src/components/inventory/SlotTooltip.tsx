@@ -84,6 +84,11 @@ const SlotTooltip: React.ForwardRefRenderFunction<
             </div>
           )}
           <Divider />
+          {item.metadata?.renamed && (
+            <p className="tooltip-original">
+              {Locale.ui_original_name || 'Original name'}: {item.metadata.baseLabel || itemData.label}
+            </p>
+          )}
           {description && (
             <div className="tooltip-description">
               <Markdown content={description} className="tooltip-markdown" />

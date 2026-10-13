@@ -9,6 +9,7 @@ import { setClipboard } from '../../utils/setClipboard';
 import { useAppSelector } from '../../store';
 import React from 'react';
 import { Menu, MenuItem } from '../utils/menu/Menu';
+import { openMetadataEditor } from '../mystory/MetadataEditor';
 
 interface DataProps {
   action: string;
@@ -61,6 +62,12 @@ const InventoryContext: React.FC = () => {
       case 'copy':
         setClipboard(data.serial || '');
         break;
+      case 'rename':
+        isSlotWithItem(item) && openMetadataEditor(item, 'label');
+        break;
+      case 'note':
+        isSlotWithItem(item) && openMetadataEditor(item, 'note');
+        break;
       case 'custom':
         fetchNui('useButton', { id: (data?.id || 0) + 1, slot: item.slot });
         break;
@@ -95,6 +102,8 @@ const InventoryContext: React.FC = () => {
         <MenuItem onClick={() => handleClick({ action: 'use' })} label={Locale.ui_use || 'Use'} />
         <MenuItem onClick={() => handleClick({ action: 'give' })} label={Locale.ui_give || 'Give'} />
         <MenuItem onClick={() => handleClick({ action: 'drop' })} label={Locale.ui_drop || 'Drop'} />
+        <MenuItem onClick={() => handleClick({ action: 'rename' })} label={Locale.ui_rename || 'Rename'} />
+        <MenuItem onClick={() => handleClick({ action: 'note' })} label={Locale.ui_note || 'Note'} />
         {item && item.metadata?.ammo > 0 && (
           <MenuItem onClick={() => handleClick({ action: 'removeAmmo' })} label={Locale.ui_remove_ammo} />
         )}

@@ -965,6 +965,79 @@ body.inv-dragging {
   }
 }
 
+.tooltip-original {
+  font-style: italic;
+}
+
+.metadata-editor-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 4, 10, 0.55);
+}
+
+.metadata-editor {
+  @extend %surface;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 360px;
+  padding: 18px;
+  h3 {
+    margin: 0;
+    font-family: $headingFont;
+    font-size: 15px;
+    color: #fff;
+  }
+  input {
+    height: 38px;
+    padding: 0 12px;
+    background: $nightColor;
+    border: 1px solid $borderColor;
+    border-radius: 10px;
+    outline: none;
+    color: #fff;
+    font-family: $mainFont;
+    font-size: 14px;
+    &:focus {
+      border-color: $accentColor;
+    }
+  }
+  p {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12px;
+    color: $mutedTextColor;
+  }
+}
+
+.metadata-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  button {
+    height: 34px;
+    padding: 0 16px;
+    background: none;
+    border: 1px solid $borderColor;
+    border-radius: 999px;
+    color: $textColor;
+    font-family: $mainFont;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    &.primary {
+      background: linear-gradient(180deg, $accentColorLight, $accentColor);
+      border-color: $accentColorLight;
+      color: #fff;
+    }
+  }
+}
+
 .tooltip-cooled {
   color: #7dd3fc !important;
 }

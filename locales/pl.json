@@ -125,5 +125,13 @@
   "ui_freshness": "Świeżość",
   "ui_spoils_in": "Zepsuje się za %s",
   "ui_spoiled": "Zepsute",
-  "ui_cooled": "W lodówce, psuje się %sx wolniej"
+  "ui_cooled": "W lodówce, psuje się %sx wolniej",
+  "metadata_locked": "Tego przedmiotu nie można nazwać ani opisać",
+  "ui_rename": "Zmień nazwę",
+  "ui_note": "Notatka",
+  "ui_save": "Zapisz",
+  "ui_cancel": "Anuluj",
+  "ui_rename_hint": "Zostaw puste, żeby przywrócić oryginalną nazwę",
+  "ui_note_hint": "Zostaw puste, żeby usunąć notatkę",
+  "ui_original_name": "Oryginalna nazwa"
 }

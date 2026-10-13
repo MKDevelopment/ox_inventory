@@ -125,5 +125,13 @@
   "ui_freshness": "Freshness",
   "ui_spoils_in": "Spoils in %s",
   "ui_spoiled": "Spoiled",
-  "ui_cooled": "In a fridge, spoils %sx slower"
+  "ui_cooled": "In a fridge, spoils %sx slower",
+  "metadata_locked": "This item can not be renamed or annotated",
+  "ui_rename": "Rename",
+  "ui_note": "Note",
+  "ui_save": "Save",
+  "ui_cancel": "Cancel",
+  "ui_rename_hint": "Leave empty to restore the original name",
+  "ui_note_hint": "Leave empty to remove the note",
+  "ui_original_name": "Original name"
 }

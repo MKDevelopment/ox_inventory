@@ -4,6 +4,7 @@ require 'modules.bridge.client'
 require 'modules.interface.client'
 require 'modules.clothing.client'
 require 'modules.sort.client'
+require 'modules.metadata.client'
 
 local Utils = require 'modules.utils.client'
 local Weapon = require 'modules.weapon.client'
