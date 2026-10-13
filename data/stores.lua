@@ -37,6 +37,9 @@ return {
 	-- How many recent sales the manage tab shows.
 	historyLimit = 50,
 
+	-- Sales older than this are deleted on resource start (0 keeps everything).
+	salesRetentionDays = 90,
+
 	marker = { type = 29, colour = { 124, 92, 255 }, scale = { 0.5, 0.5, 0.5 } },
 	defaultBlip = { sprite = 52, colour = 27, scale = 0.7 },
 }

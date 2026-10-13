@@ -95,6 +95,10 @@ MySQL.ready(function()
 		)
 	]])
 
+	if (config.salesRetentionDays or 90) > 0 then
+		MySQL.update.await('DELETE FROM `mystory_store_sales` WHERE `created_at` < NOW() - INTERVAL ? DAY', { config.salesRetentionDays or 90 })
+	end
+
 	for _, row in ipairs(MySQL.query.await('SELECT * FROM `mystory_stores`') or {}) do
 		local coords = json.decode(row.coords)
 
@@ -187,13 +191,20 @@ exports.ox_inventory:registerHook('openInventory', function(payload)
 	if store and not canManage(payload.source, store) then return false end
 end, { inventoryFilter = { '^' .. STOCK_PREFIX } })
 
+---Stock of every item in one pass over the stock room (instead of one pass per product).
 ---@param store Store
----@param itemName string
----@return number
-local function getStock(store, itemName)
-	if store.type == 'infinite' then return 9999 end
+---@return table<string, number>
+local function getAllStock(store)
+	local counts = {}
+	if store.type == 'infinite' then return setmetatable(counts, { __index = function() return 9999 end }) end
 
-	return Inventory.GetItemCount(STOCK_PREFIX .. store.id, itemName) or 0
+	local inv = Inventory(STOCK_PREFIX .. store.id)
+
+	for _, slot in pairs(inv and inv.items or {}) do
+		counts[slot.name] = (counts[slot.name] or 0) + slot.count
+	end
+
+	return setmetatable(counts, { __index = function() return 0 end })
 end
 
 ---Everything a customer (and a manager) sees when opening the store.
@@ -202,10 +213,11 @@ lib.callback.register('ox_inventory:openStore', function(source, id)
 	if not store or not isNear(source, store) then return end
 
 	local products = {}
+	local stockCounts = getAllStock(store)
 
 	for name, entry in pairs(store.items) do
 		if entry.enabled then
-			local stock = getStock(store, name)
+			local stock = stockCounts[name]
 
 			products[#products + 1] = { name = name, price = entry.price, stock = stock }
 		end
@@ -224,7 +236,7 @@ lib.callback.register('ox_inventory:openStore', function(source, id)
 				name = name,
 				price = entry.price,
 				enabled = entry.enabled,
-				stock = getStock(store, name),
+				stock = stockCounts[name],
 			}
 		end
 
@@ -287,6 +299,7 @@ lib.callback.register('ox_inventory:checkoutStore', function(source, id, cart, m
 	if not inv?.player or Player(source).state.invBusy then return false end
 
 	local lines, total, totalWeight = {}, 0, 0
+	local stockCounts = getAllStock(store)
 
 	for name, count in pairs(cart) do
 		count = toInt(count)
@@ -298,7 +311,7 @@ lib.callback.register('ox_inventory:checkoutStore', function(source, id, cart, m
 			return false, 'store_cart_invalid'
 		end
 
-		if getStock(store, name) < count then return false, 'store_out_of_stock' end
+		if stockCounts[name] < count then return false, 'store_out_of_stock' end
 
 		lines[#lines + 1] = { name = name, count = count, item = item }
 		total += entry.price * count
@@ -431,7 +444,7 @@ lib.callback.register('ox_inventory:manageStore', function(source, id, action, d
 			SELECT
 				COALESCE(SUM(CASE WHEN `created_at` >= CURDATE() THEN `total` END), 0) AS `today`,
 				COALESCE(SUM(CASE WHEN `created_at` >= NOW() - INTERVAL 7 DAY THEN `total` END), 0) AS `week`
-			FROM `mystory_store_sales` WHERE `store` = ?
+			FROM `mystory_store_sales` WHERE `store` = ? AND `created_at` >= NOW() - INTERVAL 7 DAY
 		]], { store.id }) or {}
 
 		for i = 1, #sales do

@@ -42,6 +42,9 @@ const StoreManage: React.FC<Props> = ({ store, management, onUpdate }) => {
     const price = parseInt(priceValue(name, fallback), 10);
     if (Number.isNaN(price) || price < 0) return;
 
+    const current = management.items.find((item) => item.name === name);
+    if (current && current.price === price && current.enabled === enabled) return;
+
     manage('setItem', { name, price, enabled });
   };
 

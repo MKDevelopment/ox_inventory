@@ -62,7 +62,17 @@ exports.ox_inventory:registerHook('createItem', function(payload)
 	end
 
 	return metadata
-end)
+end, {
+	itemFilter = (function()
+		local filter = {}
+
+		for name, item in pairs(Items()) do
+			if type(item.template) == 'table' then filter[name] = true end
+		end
+
+		return filter
+	end)(),
+})
 
 ---Keeps printable characters only; tooltips render values as plain text but labels are reused elsewhere.
 ---@param value string

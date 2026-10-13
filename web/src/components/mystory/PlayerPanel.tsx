@@ -26,8 +26,8 @@ const PlayerPanel: React.FC = () => {
   const [search, setSearch] = useState('');
 
   const weight = useMemo(() => getTotalWeight(inventory.items), [inventory.items]);
-  const quickSlots = inventory.items.slice(0, QUICK_SLOTS);
-  const pocket = inventory.items.slice(QUICK_SLOTS);
+  const quickSlots = useMemo(() => inventory.items.slice(0, QUICK_SLOTS), [inventory.items]);
+  const pocket = useMemo(() => inventory.items.slice(QUICK_SLOTS), [inventory.items]);
 
   const folders = useMemo(() => {
     const stats: Record<Folder, { count: number; weight: number }> = { all: { count: 0, weight: 0 } } as any;

@@ -1,6 +1,7 @@
 if not lib then return end
 
 local Inventory = require 'modules.inventory.server'
+local Items = require 'modules.items.server'
 
 local config = lib.load('data.fridges') or {}
 local patterns = config.patterns or {}
@@ -107,4 +108,15 @@ exports.ox_inventory:registerHook('swapItems', function(payload)
 		normalize(toInventory, toSlot, source)
 		normalize(fromInventory, fromSlot, source)
 	end)
-end)
+end, {
+	-- only items that spoil can be affected; skip the hook for everything else
+	itemFilter = (function()
+		local filter = {}
+
+		for name, item in pairs(Items()) do
+			if item.degrade then filter[name] = true end
+		end
+
+		return filter
+	end)(),
+})
