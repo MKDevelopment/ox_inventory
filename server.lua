@@ -19,6 +19,7 @@ local db = require 'modules.mysql.server'
 local Items = require 'modules.items.server'
 local Inventory = require 'modules.inventory.server'
 local Utils = require 'modules.utils.server'
+local Food = require 'modules.food.server'
 
 ---@param player table
 ---@param data table?
@@ -438,9 +439,12 @@ lib.callback.register('ox_inventory:useItem', function(source, itemName, slot, m
                 local ostime = os.time()
 
                 if ostime > durability then
-                    Items.UpdateDurability(inventory, data, item, 0)
-                    return TriggerClientEvent('ox_lib:notify', source,
-                        { type = 'error', description = locale('no_durability', label) })
+                    -- spoiled food may still be eaten (with consequences, see modules/food)
+                    if not Food.canEatSpoiled(item) then
+                        Items.UpdateDurability(inventory, data, item, 0)
+                        return TriggerClientEvent('ox_lib:notify', source,
+                            { type = 'error', description = locale('no_durability', label) })
+                    end
                 elseif consume ~= 0 and consume < 1 then
                     local degrade = (data.metadata.degrade or item.degrade) * 60
                     local percentage = ((durability - ostime) * 100) / degrade
@@ -451,8 +455,10 @@ lib.callback.register('ox_inventory:useItem', function(source, itemName, slot, m
                     end
                 end
             elseif durability <= 0 then
-                return TriggerClientEvent('ox_lib:notify', source,
-                    { type = 'error', description = locale('no_durability', label) })
+                if not Food.canEatSpoiled(item) then
+                    return TriggerClientEvent('ox_lib:notify', source,
+                        { type = 'error', description = locale('no_durability', label) })
+                end
             elseif consume ~= 0 and consume < 1 and durability < consume * 100 then
                 return TriggerClientEvent('ox_lib:notify', source,
                     { type = 'error', description = locale('not_enough_durability', label) })

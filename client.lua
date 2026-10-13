@@ -360,6 +360,7 @@ end)
 
 local Animations = lib.load('data.animations')
 local Items = require 'modules.items.client'
+local Food = require 'modules.food.client'
 local usingItem = false
 
 ---@param data { name: string, label: string, count: number, slot: number, metadata: table<string, any>, weight: number }
@@ -411,7 +412,7 @@ lib.callback.register('ox_inventory:usingItem', function(data, noAnim)
 
 			if item.status then
 				if client.setPlayerStatus then
-					client.setPlayerStatus(item.status)
+					Food.applyStatus(item.status, data.metadata)
 				end
 			end
 

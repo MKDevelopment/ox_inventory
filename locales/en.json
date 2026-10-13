@@ -178,5 +178,7 @@
   "ui_store_today": "Today",
   "ui_store_week": "Last 7 days",
   "ui_store_no_sales": "No sales yet.",
-  "ui_store_products": "Products"
+  "ui_store_products": "Products",
+  "food_poisoned": "That food was spoiled. You feel sick.",
+  "ui_spoiled_edible": "Can be eaten, but may poison you"
 }

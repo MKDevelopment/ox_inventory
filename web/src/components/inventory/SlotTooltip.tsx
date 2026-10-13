@@ -106,6 +106,9 @@ const SlotTooltip: React.ForwardRefRenderFunction<
                   {item.metadata?.degrade && item.metadata?.durability > 100 && (
                     <p>{formatSpoilTime(item.metadata.durability)}</p>
                   )}
+                  {item.metadata?.degrade && item.durability <= 0 && getItemCategory(item.name) === 'food' && (
+                    <p className="tooltip-spoiled">{Locale.ui_spoiled_edible || 'Can be eaten, but may poison you'}</p>
+                  )}
                   {item.metadata?.cooled && (
                     <p className="tooltip-cooled">
                       {(Locale.ui_cooled || 'In a fridge, spoils %sx slower').replace(

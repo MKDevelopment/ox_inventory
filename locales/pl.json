@@ -178,5 +178,7 @@
   "ui_store_today": "Dzisiaj",
   "ui_store_week": "Ostatnie 7 dni",
   "ui_store_no_sales": "Brak sprzedaży.",
-  "ui_store_products": "Produkty"
+  "ui_store_products": "Produkty",
+  "food_poisoned": "To jedzenie było zepsute. Robi ci się niedobrze.",
+  "ui_spoiled_edible": "Da się zjeść, ale grozi zatruciem"
 }
