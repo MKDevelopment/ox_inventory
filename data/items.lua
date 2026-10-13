@@ -54,6 +54,7 @@ return {
 	},
 
 	['bandage'] = {
+		category = 'medical',
 		label = 'Bandage',
 		weight = 115,
 		client = {
@@ -93,6 +94,7 @@ return {
 	},
 
 	['parachute'] = {
+		category = 'tools',
 		label = 'Parachute',
 		weight = 8000,
 		stack = false,
@@ -115,6 +117,7 @@ return {
 	},
 
 	['identification'] = {
+		category = 'documents',
 		label = 'Identification',
 		client = {
 			image = 'card_id.png'
@@ -134,11 +137,13 @@ return {
 	},
 
 	['lockpick'] = {
+		category = 'tools',
 		label = 'Lockpick',
 		weight = 160,
 	},
 
 	['phone'] = {
+		category = 'tools',
 		label = 'Phone',
 		weight = 190,
 		stack = false,
@@ -188,6 +193,7 @@ return {
 	},
 
 	['radio'] = {
+		category = 'tools',
 		label = 'Radio',
 		weight = 1000,
 		stack = false,
@@ -195,6 +201,7 @@ return {
 	},
 
 	['armour'] = {
+		category = 'medical',
 		label = 'Bulletproof Vest',
 		weight = 3000,
 		stack = false,
@@ -210,6 +217,7 @@ return {
 	},
 
 	['mastercard'] = {
+		category = 'documents',
 		label = 'Fleeca Card',
 		stack = false,
 		weight = 10,

@@ -57,6 +57,15 @@ debugData([
               imageurl: 'https://i.imgur.com/2xHhTTz.png',
             },
           },
+          {
+            slot: 7,
+            name: 'WEAPON_PISTOL',
+            weight: 1130,
+            count: 1,
+            metadata: { durability: 64, serial: 'POL123', ammo: 12 },
+          },
+          { slot: 8, name: 'clothing_top', weight: 300, count: 1, metadata: { label: 'Góra #42' } },
+          { slot: 9, name: 'bandage', weight: 115, count: 4 },
         ],
       },
       rightInventory: {

@@ -95,5 +95,20 @@
   "clothing_nothing_worn": "Nie masz na sobie nic, co można zdjąć",
   "clothing_not_worn": "Nie masz tego na sobie",
   "clothing_invalid_ped": "Twoja postać nie może używać ubrań jako przedmiotów",
-  "clothing_wrong_sex": "To ubranie nie pasuje do twojej postaci"
+  "clothing_wrong_sex": "To ubranie nie pasuje do twojej postaci",
+  "ui_search": "Szukaj...",
+  "ui_amount": "Ilość",
+  "ui_amount_all": "Wszystko",
+  "ui_weight": "Waga",
+  "ui_category_all": "Wszystko",
+  "ui_category_weapons": "Broń",
+  "ui_category_food": "Jedzenie",
+  "ui_category_medical": "Medyczne",
+  "ui_category_clothing": "Ubrania",
+  "ui_category_tools": "Narzędzia",
+  "ui_category_documents": "Dokumenty",
+  "ui_category_other": "Inne",
+  "ui_hint_close": "zamknij",
+  "ui_hint_split": "podziel",
+  "ui_hint_quickmove": "szybkie przeniesienie"
 }

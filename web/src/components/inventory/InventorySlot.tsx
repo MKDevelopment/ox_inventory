@@ -21,10 +21,11 @@ interface SlotProps {
   inventoryType: Inventory['type'];
   inventoryGroups: Inventory['groups'];
   item: Slot;
+  dimmed?: boolean;
 }
 
 const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> = (
-  { item, inventoryId, inventoryType, inventoryGroups },
+  { item, inventoryId, inventoryType, inventoryGroups, dimmed },
   ref
 ) => {
   const manager = useDragDropManager();
@@ -127,7 +128,7 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
       ref={refs}
       onContextMenu={handleContext}
       onClick={handleClick}
-      className="inventory-slot"
+      className={`inventory-slot${dimmed ? ' inventory-slot--dimmed' : ''}`}
       style={{
         filter:
           !canPurchaseItem(item, { type: inventoryType, groups: inventoryGroups }) || !canCraftItem(item, inventoryType)

@@ -1243,7 +1243,8 @@ RegisterNetEvent('ox_inventory:setPlayerInventory', function(currentDrops, inven
 			description = v.description,
 			buttons = buttons,
 			ammoName = v.ammoname,
-			image = v.client?.image
+			image = v.client?.image,
+			category = v.category or (v.client?.status and (v.client.status.hunger or v.client.status.thirst) and 'food') or nil
 		}
 	end
 

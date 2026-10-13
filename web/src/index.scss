@@ -145,22 +145,282 @@ body.inv-dragging {
   justify-content: center;
   align-items: center;
   height: 100%;
+  background: radial-gradient(ellipse at center, rgba(10, 8, 18, 0.35) 0%, rgba(5, 4, 10, 0.7) 100%);
+}
 
-  gap: 20px;
+.inventory-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: inventory-pop 220ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+@keyframes inventory-pop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.inventory-columns {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 14px;
+}
+
+// header
+.inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: $mainColor;
+  border: 1px solid $borderColor;
+  border-radius: 14px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+.inventory-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  img {
+    height: 4.2vh;
+    filter: drop-shadow(0 0 10px rgba(139, 109, 255, 0.45));
+  }
+  p {
+    font-family: $headingFont;
+    font-weight: 800;
+    font-size: 2.2vh;
+    color: #fff;
+    letter-spacing: -0.01em;
+    span {
+      background: linear-gradient(90deg, $accentColor, #a98bff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+  }
+}
+
+.inventory-hints {
+  display: flex;
+  gap: 18px;
+}
+
+.inventory-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: $mainFont;
+  font-size: 12px;
+  color: $mutedTextColor;
+  kbd {
+    font-family: $mainFont;
+    font-size: 11px;
+    font-weight: 600;
+    color: $textColor;
+    background: $secondaryColorHighlight;
+    border: 1px solid $borderColor;
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    padding: 1px 6px;
+  }
+  span {
+    margin-left: 2px;
+  }
+}
+
+// inventory panels
+.inventory-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: radial-gradient(circle at 100% 0%, rgba(109, 74, 255, 0.12), transparent 45%), $mainColor;
+  border: 1px solid $borderColor;
+  border-radius: 14px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+.inventory-panel-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inventory-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inventory-panel-slots {
+  font-family: $mainFont;
+  font-size: 11px;
+  font-weight: 600;
+  color: $accentColorLight;
+  background: $accentColorSoft;
+  border: 1px solid rgba(109, 74, 255, 0.3);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.inventory-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: calc(#{$gridCols} * #{$gridSize} + #{$gridCols - 1} * #{$gridGap});
+}
+
+.inventory-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  height: 32px;
+  background: $secondaryColor;
+  border: 1px solid $borderColor;
+  border-radius: $radius;
+  transition: border-color 150ms;
+  &:focus-within {
+    border-color: $accentColor;
+  }
+  svg {
+    width: 16px;
+    height: 16px;
+    fill: $mutedTextColor;
+    flex-shrink: 0;
+  }
+  input {
+    flex: 1;
+    min-width: 0;
+    background: none;
+    border: none;
+    outline: none;
+    color: $textColor;
+    font-family: $mainFont;
+    font-size: 13px;
+    &::placeholder {
+      color: $mutedTextColor;
+    }
+  }
+}
+
+.inventory-search-clear {
+  background: none;
+  border: none;
+  color: $mutedTextColor;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  &:hover {
+    color: #fff;
+  }
+}
+
+.inventory-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.inventory-category {
+  font-family: $mainFont;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: $mutedTextColor;
+  background: $secondaryColor;
+  border: 1px solid $borderColor;
+  border-radius: 999px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: 150ms;
+  &:hover {
+    color: #fff;
+    border-color: rgba(109, 74, 255, 0.5);
+  }
+  &.active {
+    color: #fff;
+    background: $accentColor;
+    border-color: $accentColorLight;
+  }
+}
+
+.inventory-slot--dimmed {
+  opacity: 0.18;
+  filter: grayscale(100%);
 }
 
 .inventory-control {
   display: flex;
+  width: 13vw;
+  min-width: 180px;
 
   .inventory-control-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 10px;
     justify-content: center;
-    align-items: center;
+    align-items: stretch;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 16px;
+    background: $mainColor;
+    border: 1px solid $borderColor;
+    border-radius: 14px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  }
+
+  .inventory-control-label {
+    font-family: $mainFont;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $mutedTextColor;
+  }
+
+  .inventory-control-presets {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .inventory-control-preset {
+    font-family: $mainFont;
+    font-size: 11px;
+    font-weight: 600;
+    color: $mutedTextColor;
+    background: $secondaryColor;
+    border: 1px solid $borderColor;
+    border-radius: 6px;
+    padding: 6px 0;
+    cursor: pointer;
+    transition: 150ms;
+    &:hover,
+    &.active {
+      color: #fff;
+      border-color: $accentColor;
+    }
+  }
+
+  .inventory-control-divider {
+    height: 1px;
+    margin: 4px 0;
+    background: $borderColor;
   }
 
   .inventory-control-input {
+    box-sizing: border-box;
+    width: 100%;
     transition: 200ms;
     padding: 16px 8px;
     border-radius: $radius;
@@ -188,12 +448,31 @@ body.inv-dragging {
     text-transform: uppercase;
     letter-spacing: 0.06em;
     font-family: $headingFont;
+    box-sizing: border-box;
     width: 100%;
     font-weight: 600;
     &:hover {
       background-color: $accentColor;
       border-color: $accentColorLight;
       box-shadow: 0 0 18px rgba(109, 74, 255, 0.35);
+    }
+    &.primary {
+      background: linear-gradient(180deg, $accentColorLight, $accentColor);
+      border-color: $accentColorLight;
+      box-shadow: 0 6px 18px rgba(109, 74, 255, 0.35);
+      &:hover {
+        filter: brightness(1.1);
+      }
+    }
+    &.ghost {
+      background: transparent;
+      color: $mutedTextColor;
+      &:hover {
+        color: #fff;
+        background: rgba(239, 68, 68, 0.18);
+        border-color: rgba(239, 68, 68, 0.5);
+        box-shadow: none;
+      }
     }
   }
 }
@@ -291,11 +570,6 @@ body.inv-dragging {
 // Dialog is used fro useful controls window
 
 // inventory grids
-.inventory-grid-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: calc($gridGap * 2);
-}
 .inventory-grid-header-wrapper {
   display: flex;
   flex-direction: row;
@@ -319,6 +593,7 @@ body.inv-dragging {
   grid-template-columns: repeat($gridCols, $gridSize);
   grid-auto-rows: $gridSize + 0.22vh;
   gap: $gridGap;
+  align-content: start;
   overflow-y: scroll;
 }
 
@@ -461,6 +736,42 @@ body.inv-dragging {
   }
 }
 
+.tooltip-category {
+  font-family: $mainFont;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $accentColorLight;
+  background: $accentColorSoft;
+  border: 1px solid rgba(109, 74, 255, 0.3);
+  border-radius: 999px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.tooltip-stats {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 4px;
+  font-size: 12px;
+  color: $mutedTextColor;
+  b {
+    color: $textColor;
+    font-weight: 600;
+  }
+}
+
+.tooltip-durability {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0;
+  .durability-bar {
+    border-radius: 999px;
+  }
+}
+
 .tooltip-crafting-duration {
   display: flex;
   flex-direction: row;
@@ -492,12 +803,39 @@ body.inv-dragging {
 // hotbar
 .hotbar-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 4px;
-  justify-content: center;
+  gap: 6px;
   width: 100%;
   position: absolute;
   bottom: 2vh;
+}
+
+.hotbar-slots {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  background: rgba(15, 13, 23, 0.75);
+  border: 1px solid $borderColor;
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.hotbar-weight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background: rgba(15, 13, 23, 0.75);
+  border: 1px solid $borderColor;
+  border-radius: 999px;
+  font-family: $mainFont;
+  font-size: 12px;
+  font-weight: 600;
+  color: $textColor;
+  .weight-bar {
+    width: 90px;
+  }
 }
 
 .hotbar-item-slot {

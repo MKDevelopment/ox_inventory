@@ -9,6 +9,8 @@ import { fetchNui } from '../../utils/fetchNui';
 import { Locale } from '../../store/locale';
 import UsefulControls from './UsefulControls';
 
+const AMOUNT_PRESETS = [0, 1, 5, 10];
+
 const formatAmount = (n: number) => (n > 0 ? n.toLocaleString('en-US') : '0');
 const digitsOnly = (s: string) => s.replace(/\D/g, '');
 const countDigitsBefore = (s: string, index: number) => digitsOnly(s.substring(0, index)).length;
@@ -43,6 +45,11 @@ const InventoryControl: React.FC = () => {
     setValue(formatAmount(num));
     dispatch(setItemAmount(num));
     cursorRef.current = digitsBefore;
+  };
+
+  const setAmount = (amount: number) => {
+    setValue(formatAmount(amount));
+    dispatch(setItemAmount(amount));
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) =>
@@ -82,6 +89,7 @@ const InventoryControl: React.FC = () => {
       <UsefulControls infoVisible={infoVisible} setInfoVisible={setInfoVisible} />
       <div className="inventory-control">
         <div className="inventory-control-wrapper">
+          <label className="inventory-control-label">{Locale.ui_amount || 'Amount'}</label>
           <input
             className="inventory-control-input"
             type="text"
@@ -91,8 +99,20 @@ const InventoryControl: React.FC = () => {
             onKeyDown={handleKeyDown}
             min={0}
           />
+          <div className="inventory-control-presets">
+            {AMOUNT_PRESETS.map((preset) => (
+              <button
+                key={preset}
+                className={`inventory-control-preset${itemAmount === preset ? ' active' : ''}`}
+                onClick={() => setAmount(preset)}
+              >
+                {preset === 0 ? Locale.ui_amount_all || 'All' : preset}
+              </button>
+            ))}
+          </div>
+          <div className="inventory-control-divider" />
           <button
-            className="inventory-control-button"
+            className="inventory-control-button primary"
             ref={(el) => {
               use(el);
             }}
@@ -107,7 +127,7 @@ const InventoryControl: React.FC = () => {
           >
             {Locale.ui_give || 'Give'}
           </button>
-          <button className="inventory-control-button" onClick={() => fetchNui('exit')}>
+          <button className="inventory-control-button ghost" onClick={() => fetchNui('exit')}>
             {Locale.ui_close || 'Close'}
           </button>
         </div>

@@ -7,6 +7,11 @@ import ClockIcon from '../utils/icons/ClockIcon';
 import { getItemUrl } from '../../helpers';
 import Divider from '../utils/Divider';
 import Markdown from '../utils/Markdown';
+import WeightBar from '../utils/WeightBar';
+import { getCategoryLabel, getItemCategory } from '../../helpers/category';
+
+const formatWeight = (weight: number) =>
+  weight >= 1000 ? `${(weight / 1000).toLocaleString('en-us', { maximumFractionDigits: 2 })}kg` : `${weight}g`;
 
 const SlotTooltip: React.ForwardRefRenderFunction<
   HTMLDivElement,
@@ -40,9 +45,25 @@ const SlotTooltip: React.ForwardRefRenderFunction<
                 <p>{(item.duration !== undefined ? item.duration : 3000) / 1000}s</p>
               </div>
             ) : (
-              <p>{item.metadata?.type}</p>
+              <span className="tooltip-category">
+                {item.metadata?.type || getCategoryLabel(getItemCategory(item.name))}
+              </span>
             )}
           </div>
+          {inventoryType !== 'crafting' && (
+            <div className="tooltip-stats">
+              {item.weight > 0 && (
+                <span>
+                  {Locale.ui_weight || 'Weight'}: <b>{formatWeight(item.weight)}</b>
+                </span>
+              )}
+              {item.count > 1 && (
+                <span>
+                  <b>{item.count.toLocaleString('en-us')}x</b>
+                </span>
+              )}
+            </div>
+          )}
           <Divider />
           {description && (
             <div className="tooltip-description">
@@ -52,9 +73,12 @@ const SlotTooltip: React.ForwardRefRenderFunction<
           {inventoryType !== 'crafting' ? (
             <>
               {item.durability !== undefined && (
-                <p>
-                  {Locale.ui_durability}: {Math.trunc(item.durability)}
-                </p>
+                <div className="tooltip-durability">
+                  <p>
+                    {Locale.ui_durability}: {Math.trunc(item.durability)}%
+                  </p>
+                  <WeightBar percent={item.durability} durability />
+                </div>
               )}
               {item.metadata?.ammo !== undefined && (
                 <p>

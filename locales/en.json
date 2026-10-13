@@ -95,5 +95,20 @@
   "clothing_nothing_worn": "You are not wearing anything you can take off",
   "clothing_not_worn": "You are not wearing that",
   "clothing_invalid_ped": "Your character model can not use clothing items",
-  "clothing_wrong_sex": "This clothing does not fit your character"
+  "clothing_wrong_sex": "This clothing does not fit your character",
+  "ui_search": "Search...",
+  "ui_amount": "Amount",
+  "ui_amount_all": "All",
+  "ui_weight": "Weight",
+  "ui_category_all": "All",
+  "ui_category_weapons": "Weapons",
+  "ui_category_food": "Food",
+  "ui_category_medical": "Medical",
+  "ui_category_clothing": "Clothing",
+  "ui_category_tools": "Tools",
+  "ui_category_documents": "Documents",
+  "ui_category_other": "Other",
+  "ui_hint_close": "close",
+  "ui_hint_split": "split",
+  "ui_hint_quickmove": "quick move"
 }
