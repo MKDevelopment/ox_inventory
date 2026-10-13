@@ -22,6 +22,9 @@ shared = {
     networkdumpsters = GetConvarBool('inventory:networkdumpsters', false)
 }
 
+-- ESX only: xPlayer keys whose job name and grade are used as inventory groups, e.g. ["job", "job2"]
+shared.esxjobs = json.decode(GetConvar('inventory:esxjobs', '["job"]')) or { 'job' }
+
 shared.dropslots = GetConvarInt('inventory:dropslots', shared.playerslots)
 shared.dropweight = GetConvarInt('inventory:dropweight', shared.playerweight)
 

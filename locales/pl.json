@@ -89,5 +89,11 @@
   "crafting_bench": "Stół do wytwarzania",
   "open_crafting_bench": "Otwórz stół do wytwarzania",
   "not_enough_durability": "%s nie posiada wystarczająco wytrzymałości",
-  "storage": "Magazyn"
+  "storage": "Magazyn",
+  "clothing_menu": "Ubrania",
+  "clothing_take_off": "Zdejmij",
+  "clothing_nothing_worn": "Nie masz na sobie nic, co można zdjąć",
+  "clothing_not_worn": "Nie masz tego na sobie",
+  "clothing_invalid_ped": "Twoja postać nie może używać ubrań jako przedmiotów",
+  "clothing_wrong_sex": "To ubranie nie pasuje do twojej postaci"
 }

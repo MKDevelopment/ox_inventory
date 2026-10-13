@@ -89,5 +89,11 @@
   "crafting_bench": "Crafting Bench",
   "open_crafting_bench": "Open Crafting Bench",
   "not_enough_durability": "%s does not have enough durability",
-  "storage": "Storage"
+  "storage": "Storage",
+  "clothing_menu": "Clothing",
+  "clothing_take_off": "Take off",
+  "clothing_nothing_worn": "You are not wearing anything you can take off",
+  "clothing_not_worn": "You are not wearing that",
+  "clothing_invalid_ped": "Your character model can not use clothing items",
+  "clothing_wrong_sex": "This clothing does not fit your character"
 }

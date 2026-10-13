@@ -222,4 +222,137 @@ return {
 		label = 'Scrap Metal',
 		weight = 80,
 	},
+
+	-- Clothing as items (modules/clothing, data/clothing.lua); requires `setr inventory:clothingitems true`
+	['clothing_top'] = {
+		label = 'Góra',
+		weight = 300,
+		stack = false,
+		close = true,
+		consume = 0,
+		client = {
+			export = 'ox_inventory.wearClothing'
+		}
+	},
+
+	['clothing_pants'] = {
+		label = 'Spodnie',
+		weight = 300,
+		stack = false,
+		close = true,
+		consume = 0,
+		client = {
+			export = 'ox_inventory.wearClothing'
+		}
+	},
+
+	['clothing_shoes'] = {
+		label = 'Buty',
+		weight = 300,
+		stack = false,
+		close = true,
+		consume = 0,
+		client = {
+			export = 'ox_inventory.wearClothing'
+		}
+	},
+
+	['clothing_mask'] = {
+		label = 'Maska',
+		weight = 300,
+		stack = false,
+		close = true,
+		consume = 0,
+		client = {
+			export = 'ox_inventory.wearClothing'
+		}
+	},
+
+	['clothing_accessory'] = {
+		label = 'Akcesoria',
+		weight = 300,
+		stack = false,
+		close = true,
+		consume = 0,
+		client = {
+			export = 'ox_inventory.wearClothing'
+		}
+	},
+
+	['clothing_vest'] = {
+		label = 'Kamizelka',
+		weight = 300,
+		stack = false,
+		close = true,
+		consume = 0,
+		client = {
+			export = 'ox_inventory.wearClothing'
+		}
+	},
+
+	['clothing_bag'] = {
+		label = 'Torba',
+		weight = 300,
+		stack = false,
+		close = true,
+		consume = 0,
+		client = {
+			export = 'ox_inventory.wearClothing'
+		}
+	},
+
+	['clothing_hat'] = {
+		label = 'Czapka',
+		weight = 300,
+		stack = false,
+		close = true,
+		consume = 0,
+		client = {
+			export = 'ox_inventory.wearClothing'
+		}
+	},
+
+	['clothing_glasses'] = {
+		label = 'Okulary',
+		weight = 300,
+		stack = false,
+		close = true,
+		consume = 0,
+		client = {
+			export = 'ox_inventory.wearClothing'
+		}
+	},
+
+	['clothing_ears'] = {
+		label = 'Kolczyki',
+		weight = 300,
+		stack = false,
+		close = true,
+		consume = 0,
+		client = {
+			export = 'ox_inventory.wearClothing'
+		}
+	},
+
+	['clothing_watch'] = {
+		label = 'Zegarek',
+		weight = 300,
+		stack = false,
+		close = true,
+		consume = 0,
+		client = {
+			export = 'ox_inventory.wearClothing'
+		}
+	},
+
+	['clothing_bracelet'] = {
+		label = 'Bransoletka',
+		weight = 300,
+		stack = false,
+		close = true,
+		consume = 0,
+		client = {
+			export = 'ox_inventory.wearClothing'
+		}
+	},
 }
