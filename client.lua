@@ -361,6 +361,7 @@ end)
 local Animations = lib.load('data.animations')
 local Items = require 'modules.items.client'
 local Food = require 'modules.food.client'
+local FoodTiers = (lib.load('data.food') or {}).tiers or {}
 local usingItem = false
 
 ---@param data { name: string, label: string, count: number, slot: number, metadata: table<string, any>, weight: number }
@@ -412,7 +413,7 @@ lib.callback.register('ox_inventory:usingItem', function(data, noAnim)
 
 			if item.status then
 				if client.setPlayerStatus then
-					Food.applyStatus(item.status, data.metadata)
+					Food.applyStatus(item.status, data.metadata, data.name)
 				end
 			end
 
@@ -1248,7 +1249,8 @@ RegisterNetEvent('ox_inventory:setPlayerInventory', function(currentDrops, inven
 			buttons = buttons,
 			ammoName = v.ammoname,
 			image = v.client?.image,
-			category = v.category or (v.client?.status and (v.client.status.hunger or v.client.status.thirst) and 'food') or nil
+			category = v.category or (v.client?.status and (v.client.status.hunger or v.client.status.thirst) and 'food') or nil,
+			tier = v.tier and FoodTiers[v.tier] and { name = v.tier, caps = FoodTiers[v.tier] } or nil,
 		}
 	end
 

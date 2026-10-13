@@ -1,5 +1,6 @@
 if not lib then return end
 
+local Items = require 'modules.items.shared'
 local config = lib.load('data.food') or {}
 local poison = config.poison or {}
 local poisoned = false
@@ -62,10 +63,58 @@ local function poisonPlayer()
 	end)
 end
 
----Applies an item's hunger/thirst values, scaled by quality and freshness.
+---Current value of an esx_status status, or nil if it can not be read.
+---@param name string
+---@return number?
+local function getStatusValue(name)
+	local p = promise.new()
+
+	TriggerEvent('esx_status:getStatus', name, function(status)
+		p:resolve(status and status.val)
+	end)
+
+	SetTimeout(250, function()
+		if p.state == 0 then p:resolve(nil) end
+	end)
+
+	return Citizen.Await(p)
+end
+
+---Limits each value so the status does not go past the tier cap (e.g. snacks only fill hunger to 25%).
+---@param values table<string, number>
+---@param itemName string?
+---@return string? tierName set when the cap stopped the item from filling any status
+local function applyTier(values, itemName)
+	local tierName = itemName and Items[itemName]?.tier
+	local tier = tierName and config.tiers?[tierName]
+
+	if not tier then return end
+
+	local max = config.statusMax or 1000000
+	local blocked
+
+	for name, value in pairs(values) do
+		local capPercent = tier[name]
+
+		if capPercent and value > 0 then
+			local current = getStatusValue(name)
+
+			if current then
+				local cap = max * capPercent / 100
+				values[name] = math.max(0, math.min(value, math.floor(cap - current)))
+				if values[name] == 0 then blocked = tierName end
+			end
+		end
+	end
+
+	return blocked
+end
+
+---Applies an item's hunger/thirst values, scaled by quality and freshness and capped by its tier.
 ---@param status table<string, number>
 ---@param metadata table
-function Food.applyStatus(status, metadata)
+---@param itemName string?
+function Food.applyStatus(status, metadata, itemName)
 	local spoiled = Food.isSpoiled(metadata)
 	local multiplier = qualityMultiplier(metadata) * (spoiled and (poison.statusMultiplier or 0.3) or 1.0)
 	local values = {}
@@ -75,7 +124,17 @@ function Food.applyStatus(status, metadata)
 		values[name] = value > 0 and math.floor(value * multiplier) or value
 	end
 
-	client.setPlayerStatus(values)
+	local blocked = applyTier(values, itemName)
+
+	if blocked then
+		lib.notify({ description = locale('food_tier_full', locale('tier_' .. blocked)) })
+	end
+
+	for name, value in pairs(values) do
+		if value == 0 then values[name] = nil end
+	end
+
+	if next(values) then client.setPlayerStatus(values) end
 
 	if spoiled and math.random() < (poison.chance or 0.85) then
 		poisonPlayer()

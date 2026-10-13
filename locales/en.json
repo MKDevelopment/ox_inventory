@@ -180,5 +180,20 @@
   "ui_store_no_sales": "No sales yet.",
   "ui_store_products": "Products",
   "food_poisoned": "That food was spoiled. You feel sick.",
-  "ui_spoiled_edible": "Can be eaten, but may poison you"
+  "ui_spoiled_edible": "Can be eaten, but may poison you",
+  "ui_tier_snack": "Snack",
+  "ui_tier_fastfood": "Fast food",
+  "ui_tier_restaurant": "Restaurant meal",
+  "ui_tier_junkdrink": "Soft drink",
+  "ui_tier_hotdrink": "Coffee / tea",
+  "ui_tier_restaurantdrink": "Restaurant drink",
+  "ui_tier_hunger": "fills hunger up to %s%%",
+  "ui_tier_thirst": "quenches thirst up to %s%%",
+  "food_tier_full": "%s will not fill you up any more",
+  "tier_snack": "A snack",
+  "tier_fastfood": "Fast food",
+  "tier_restaurant": "This meal",
+  "tier_junkdrink": "A soft drink",
+  "tier_hotdrink": "Coffee or tea",
+  "tier_restaurantdrink": "This drink"
 }

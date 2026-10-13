@@ -84,6 +84,17 @@ const SlotTooltip: React.ForwardRefRenderFunction<
             </div>
           )}
           <Divider />
+          {itemData.tier && (
+            <p className="tooltip-tier">
+              <b>{Locale[`ui_tier_${itemData.tier.name}`] || itemData.tier.name}</b>
+              {Object.entries(itemData.tier.caps)
+                .map(([status, cap]) =>
+                  (Locale[`ui_tier_${status}`] || `${status} up to %s%%`).replace('%s', String(cap)).replace('%%', '%')
+                )
+                .map((text) => `, ${text}`)
+                .join('')}
+            </p>
+          )}
           {item.metadata?.renamed && (
             <p className="tooltip-original">
               {Locale.ui_original_name || 'Original name'}: {item.metadata.baseLabel || itemData.label}

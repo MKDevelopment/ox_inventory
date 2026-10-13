@@ -10,4 +10,5 @@ export type ItemData = {
   ammoName?: string;
   image?: string;
   category?: string;
+  tier?: { name: string; caps: Record<string, number> };
 };

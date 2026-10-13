@@ -1,5 +1,6 @@
 return {
 	['testburger'] = {
+		tier = 'fastfood',
 		label = 'Test Burger',
 		weight = 220,
 		degrade = 60,
@@ -70,6 +71,7 @@ return {
 	},
 
 	['burger'] = {
+		tier = 'fastfood',
 		degrade = 720,
 		label = 'Burger',
 		weight = 220,
@@ -83,6 +85,7 @@ return {
 	},
 
 	['sprunk'] = {
+		tier = 'junkdrink',
 		label = 'Sprunk',
 		weight = 350,
 		client = {
@@ -186,6 +189,7 @@ return {
 	},
 
 	['mustard'] = {
+		tier = 'snack',
 		label = 'Mustard',
 		weight = 500,
 		client = {

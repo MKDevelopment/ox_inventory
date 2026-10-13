@@ -1038,6 +1038,14 @@ body.inv-dragging {
   }
 }
 
+.tooltip-tier {
+  color: $textColor !important;
+  b {
+    color: $lavenderColor;
+    font-weight: 700;
+  }
+}
+
 .tooltip-spoiled {
   color: #fca5a5 !important;
 }
