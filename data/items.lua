@@ -126,6 +126,14 @@ return {
 		consume = 0
 	},
 
+	['receipt'] = {
+		label = 'Paragon',
+		category = 'documents',
+		weight = 1,
+		stack = false,
+		close = false,
+	},
+
 	['identification'] = {
 		category = 'documents',
 		label = 'Identification',

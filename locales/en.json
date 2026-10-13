@@ -173,5 +173,10 @@
   "ui_store_move": "Move here",
   "ui_store_delete": "Delete",
   "ui_store_close": "Close",
-  "ui_store_unlimited": "Unlimited"
+  "ui_store_unlimited": "Unlimited",
+  "ui_store_history": "Sales",
+  "ui_store_today": "Today",
+  "ui_store_week": "Last 7 days",
+  "ui_store_no_sales": "No sales yet.",
+  "ui_store_products": "Products"
 }

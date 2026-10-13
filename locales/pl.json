@@ -173,5 +173,10 @@
   "ui_store_move": "Przenieś tutaj",
   "ui_store_delete": "Usuń",
   "ui_store_close": "Zamknij",
-  "ui_store_unlimited": "Bez limitu"
+  "ui_store_unlimited": "Bez limitu",
+  "ui_store_history": "Sprzedaż",
+  "ui_store_today": "Dzisiaj",
+  "ui_store_week": "Ostatnie 7 dni",
+  "ui_store_no_sales": "Brak sprzedaży.",
+  "ui_store_products": "Produkty"
 }

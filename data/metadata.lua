@@ -14,7 +14,7 @@ return {
 		noteLength = 120,
 		cooldown = 2000,
 		-- items that can never be renamed or annotated (documents, money, ...)
-		deny = { 'money', 'black_money', 'identification', 'mastercard' },
+		deny = { 'money', 'black_money', 'identification', 'mastercard', 'receipt' },
 	},
 }
 

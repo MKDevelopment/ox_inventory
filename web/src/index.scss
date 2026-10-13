@@ -1796,3 +1796,27 @@ body.inv-dragging {
     flex: 1;
   }
 }
+
+.store-subtabs {
+  align-self: flex-start;
+}
+
+.store-history {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  flex: 1;
+}
+
+.store-history-time {
+  min-width: 90px;
+  text-align: left;
+}
+
+.store-history-total {
+  min-width: 80px;
+  font-family: $headingFont;
+  color: $sunsetColor;
+  text-align: right;
+}

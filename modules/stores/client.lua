@@ -138,7 +138,9 @@ RegisterNUICallback('storeManage', function(data, cb)
 		end
 	end
 
-	cb({ success = success, store = lib.callback.await('ox_inventory:openStore', false, data.id) })
+	if data.action == 'history' then return cb({ success = success, result = result }) end
+
+	cb({ success = success, result = result, store = lib.callback.await('ox_inventory:openStore', false, data.id) })
 end)
 
 RegisterCommand(config.command or 'sklepy', function()

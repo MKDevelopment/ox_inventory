@@ -15,6 +15,26 @@ local function toInt(value)
 end
 
 
+local webhook = GetConvar('inventory:storeswebhook', '')
+
+---@param title string
+---@param description string
+---@param colour number?
+local function discordLog(title, description, colour)
+	if webhook == '' then return end
+
+	PerformHttpRequest(webhook, function() end, 'POST', json.encode({
+		username = 'MyStory Sklepy',
+		embeds = { { title = title, description = description, color = colour or 7101695, footer = { text = os.date('%d.%m.%Y %H:%M:%S') } } },
+	}), { ['Content-Type'] = 'application/json' })
+end
+
+---@param source number
+local function describePlayer(source)
+	local inv = Inventory(source)
+	return ('%s (ID %d, %s)'):format(inv and inv.label or GetPlayerName(source), source, inv and inv.owner or '?')
+end
+
 ---@class StoreItem
 ---@field price number
 ---@field enabled boolean
@@ -57,6 +77,21 @@ MySQL.ready(function()
 			`price` INT UNSIGNED NOT NULL,
 			`enabled` TINYINT(1) NOT NULL DEFAULT 1,
 			PRIMARY KEY (`store`, `item`)
+		)
+	]])
+
+	MySQL.query.await([[
+		CREATE TABLE IF NOT EXISTS `mystory_store_sales` (
+			`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+			`store` INT UNSIGNED NOT NULL,
+			`buyer` VARCHAR(64) NULL DEFAULT NULL,
+			`buyer_name` VARCHAR(64) NULL DEFAULT NULL,
+			`items` TEXT NOT NULL,
+			`total` INT UNSIGNED NOT NULL,
+			`method` VARCHAR(8) NOT NULL,
+			`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`id`),
+			KEY `store_created` (`store`, `created_at`)
 		)
 	]])
 
@@ -213,10 +248,8 @@ local function getFunds(source, method)
 		return Inventory.GetItemCount(source, 'money') or 0
 	end
 
-	local player = server.GetPlayerFromId and server.GetPlayerFromId(source)
-	local account = player and player.getAccount and player.getAccount('bank')
-
-	return account and account.money or 0
+	local ok, balance = pcall(config.bank.getBalance, source)
+	return ok and tonumber(balance) or 0
 end
 
 ---@param source number
@@ -229,11 +262,8 @@ local function charge(source, method, amount, reason)
 		return Inventory.RemoveItem(source, 'money', amount) and true or false
 	end
 
-	local player = server.GetPlayerFromId(source)
-	if not player then return false end
-
-	player.removeAccountMoney('bank', amount, reason)
-	return true
+	local ok, removed = pcall(config.bank.remove, source, amount, reason)
+	return ok and removed == true
 end
 
 local checkoutCooldown = {}
@@ -315,6 +345,41 @@ lib.callback.register('ox_inventory:checkoutStore', function(source, id, cart, m
 
 	lib.logger(inv.owner, 'storeCheckout', ('"%s" paid %d (%s) in store %d (%s)'):format(inv.label, total, method, store.id, store.label))
 
+	local summary = {}
+
+	for i = 1, #lines do
+		local line = lines[i]
+		summary[i] = { name = line.name, count = line.count, price = store.items[line.name].price }
+	end
+
+	MySQL.insert('INSERT INTO `mystory_store_sales` (`store`, `buyer`, `buyer_name`, `items`, `total`, `method`) VALUES (?, ?, ?, ?, ?, ?)', {
+		store.id, inv.owner, inv.label, json.encode(summary), total, method,
+	})
+
+	if config.receipts ~= false and Items('receipt') then
+		local rows = {}
+
+		for i = 1, #summary do
+			local line = summary[i]
+			rows[i] = ('%dx %s, $%d'):format(line.count, Items(line.name).label, line.price * line.count)
+		end
+
+		local receipt = {
+			label = ('Paragon: %s'):format(store.label),
+			description = ('%s  \n%s  \n**Razem: $%d** (%s)'):format(os.date('%d.%m.%Y %H:%M'), table.concat(rows, '  \n'), total, method == 'cash' and 'gotówka' or 'karta'),
+			store = store.label,
+			total = total,
+		}
+
+		if Inventory.CanCarryItem(inv, 'receipt', 1, receipt) then
+			Inventory.AddItem(inv, 'receipt', 1, receipt)
+		end
+	end
+
+	if total >= (config.logThreshold or 5000) then
+		discordLog('Zakup', ('%s zapłacił **$%d** (%s) w sklepie #%d %s'):format(describePlayer(source), total, method, store.id, store.label))
+	end
+
 	return true, total
 end)
 
@@ -354,8 +419,26 @@ lib.callback.register('ox_inventory:manageStore', function(source, id, action, d
 		Inventory.AddItem(inv, 'money', amount)
 		MySQL.update('UPDATE `mystory_stores` SET `cash` = 0 WHERE `id` = ?', { store.id })
 		lib.logger(inv.owner, 'storeWithdraw', ('withdrew %d from store %d (%s)'):format(amount, store.id, store.label))
+		discordLog('Wypłata z kasy', ('%s wypłacił **$%d** ze sklepu #%d %s'):format(describePlayer(source), amount, store.id, store.label), 16098115)
 
 		return true, amount
+	elseif action == 'history' then
+		local sales = MySQL.query.await('SELECT `buyer_name`, `items`, `total`, `method`, UNIX_TIMESTAMP(`created_at`) AS `time` FROM `mystory_store_sales` WHERE `store` = ? ORDER BY `id` DESC LIMIT ?', {
+			store.id, config.historyLimit or 50,
+		}) or {}
+
+		local revenue = MySQL.single.await([[
+			SELECT
+				COALESCE(SUM(CASE WHEN `created_at` >= CURDATE() THEN `total` END), 0) AS `today`,
+				COALESCE(SUM(CASE WHEN `created_at` >= NOW() - INTERVAL 7 DAY THEN `total` END), 0) AS `week`
+			FROM `mystory_store_sales` WHERE `store` = ?
+		]], { store.id }) or {}
+
+		for i = 1, #sales do
+			sales[i].items = json.decode(sales[i].items)
+		end
+
+		return true, { sales = sales, today = tonumber(revenue.today) or 0, week = tonumber(revenue.week) or 0 }
 	elseif action == 'openStock' then
 		if store.type ~= 'stock' then return false end
 
@@ -448,6 +531,7 @@ lib.callback.register('ox_inventory:adminStores', function(source, action, data)
 		end
 
 		broadcastPoints()
+		discordLog('Nowy sklep', ('%s utworzył sklep #%d %s'):format(describePlayer(source), id, fields.label), 5763719)
 		return true, id
 	end
 
@@ -472,6 +556,7 @@ lib.callback.register('ox_inventory:adminStores', function(source, action, data)
 		})
 
 		broadcastPoints()
+		discordLog('Edycja sklepu', ('%s zmienił sklep #%d %s (typ %s, praca %s %d+, właściciel %s)'):format(describePlayer(source), store.id, store.label, store.type, store.job or '-', store.grade, store.owner or '-'))
 		return true
 	elseif action == 'move' then
 		store.coords = GetEntityCoords(GetPlayerPed(source))
@@ -484,6 +569,7 @@ lib.callback.register('ox_inventory:adminStores', function(source, action, data)
 		broadcastPoints()
 		return true
 	elseif action == 'delete' then
+		discordLog('Usunięcie sklepu', ('%s usunął sklep #%d %s (w kasie $%d)'):format(describePlayer(source), store.id, store.label, store.cash), 15548997)
 		Stores[store.id] = nil
 		MySQL.update('DELETE FROM `mystory_stores` WHERE `id` = ?', { store.id })
 		MySQL.update('DELETE FROM `mystory_store_items` WHERE `store` = ?', { store.id })
