@@ -5,6 +5,7 @@ require 'modules.crafting.server'
 require 'modules.shops.server'
 require 'modules.pefcl.server'
 require 'modules.clothing.server'
+require 'modules.sort.server'
 
 if GetConvar('inventory:versioncheck', 'true') == 'true' then
     lib.versionCheck('overextended/ox_inventory')

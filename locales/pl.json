@@ -110,5 +110,16 @@
   "ui_category_other": "Inne",
   "ui_hint_close": "zamknij",
   "ui_hint_split": "podziel",
-  "ui_hint_quickmove": "szybkie przeniesienie"
+  "ui_hint_quickmove": "szybkie przeniesienie",
+  "sort_weapon_equipped": "Schowaj broń przed sortowaniem",
+  "sort_container_open": "Zamknij pojemnik przed sortowaniem",
+  "ui_sort": "Sortuj",
+  "ui_sort_name": "Nazwa",
+  "ui_sort_weight": "Waga",
+  "ui_sort_count": "Ilość",
+  "ui_sort_category": "Kategoria",
+  "ui_quickslots": "Szybki dostęp",
+  "ui_folder_empty": "Pusto. Przeciągnij przedmiot na wolny slot, żeby go tu odłożyć.",
+  "ui_free_slot": "Wolny slot",
+  "ui_slots_used": "zajętych slotów"
 }

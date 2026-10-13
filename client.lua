@@ -3,6 +3,7 @@ if not lib then return end
 require 'modules.bridge.client'
 require 'modules.interface.client'
 require 'modules.clothing.client'
+require 'modules.sort.client'
 
 local Utils = require 'modules.utils.client'
 local Weapon = require 'modules.weapon.client'

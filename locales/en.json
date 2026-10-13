@@ -110,5 +110,16 @@
   "ui_category_other": "Other",
   "ui_hint_close": "close",
   "ui_hint_split": "split",
-  "ui_hint_quickmove": "quick move"
+  "ui_hint_quickmove": "quick move",
+  "sort_weapon_equipped": "Holster your weapon before sorting",
+  "sort_container_open": "Close the container before sorting",
+  "ui_sort": "Sort",
+  "ui_sort_name": "Name",
+  "ui_sort_weight": "Weight",
+  "ui_sort_count": "Amount",
+  "ui_sort_category": "Category",
+  "ui_quickslots": "Quick access",
+  "ui_folder_empty": "Nothing here yet. Drag an item onto the free slot to put it in this pocket.",
+  "ui_free_slot": "Free slot",
+  "ui_slots_used": "slots used"
 }

@@ -1,11 +1,5 @@
-import InventoryGrid from './InventoryGrid';
-import { useAppSelector } from '../../store';
-import { selectLeftInventory } from '../../store/inventory';
+import PlayerPanel from '../mystory/PlayerPanel';
 
-const LeftInventory: React.FC = () => {
-  const leftInventory = useAppSelector(selectLeftInventory);
-
-  return <InventoryGrid inventory={leftInventory} />;
-};
+const LeftInventory: React.FC = () => <PlayerPanel />;
 
 export default LeftInventory;
