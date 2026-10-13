@@ -1,3 +1,5 @@
+@use './fonts.scss';
+
 // MyStoryRP theme (mystoryrp.com)
 // dusk palette taken from the logo: night sky, lavender arc, violet text, sunset
 $nightColor: #0c0a13;
@@ -6,8 +8,8 @@ $textColor: #ebe8f5;
 $mutedTextColor: #8d88a3;
 $lavenderColor: #b3a8ff;
 $sunsetColor: #f5a443;
-$mainFont: Manrope;
-$headingFont: Sora;
+$mainFont: Rubik;
+$headingFont: Rubik;
 
 $accentColor: #6d4aff;
 $accentColorLight: #8b6dff;
