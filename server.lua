@@ -8,6 +8,7 @@ require 'modules.clothing.server'
 require 'modules.sort.server'
 require 'modules.fridge.server'
 require 'modules.metadata.server'
+require 'modules.stores.server'
 
 if GetConvar('inventory:versioncheck', 'true') == 'true' then
     lib.versionCheck('overextended/ox_inventory')

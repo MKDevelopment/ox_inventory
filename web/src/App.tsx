@@ -11,6 +11,7 @@ import DragPreview from './components/utils/DragPreview';
 import { fetchNui } from './utils/fetchNui';
 import { useDragDropManager } from 'react-dnd';
 import KeyPress from './components/utils/KeyPress';
+import StoreApp from './components/stores/StoreApp';
 
 debugData([
   {
@@ -124,9 +125,16 @@ const App: React.FC = () => {
       <InventoryComponent />
       <DragPreview />
       <KeyPress />
+      <StoreApp />
     </div>
   );
 };
+
+const isTextField = (target: EventTarget | null) =>
+  target instanceof HTMLInputElement && (target.type === 'text' || target.type === 'number');
+
+addEventListener('focusin', (event) => isTextField(event.target) && fetchNui('inputFocus', true));
+addEventListener('focusout', (event) => isTextField(event.target) && fetchNui('inputFocus', false));
 
 addEventListener('dragstart', function (event) {
   event.preventDefault();

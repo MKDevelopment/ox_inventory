@@ -64,6 +64,7 @@ const MetadataEditor: React.FC = () => {
           value={value}
           maxLength={LIMITS[field]}
           onChange={(event) => setValue(event.target.value)}
+          onKeyUp={(event) => event.stopPropagation()}
           onKeyDown={(event) => {
             // keep Escape/Tab from closing the inventory while typing
             event.stopPropagation();

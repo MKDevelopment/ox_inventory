@@ -5,6 +5,7 @@ require 'modules.interface.client'
 require 'modules.clothing.client'
 require 'modules.sort.client'
 require 'modules.metadata.client'
+require 'modules.stores.client'
 
 local Utils = require 'modules.utils.client'
 local Weapon = require 'modules.weapon.client'
@@ -1791,6 +1792,12 @@ end)
 RegisterNUICallback('exit', function(_, cb)
 	client.closeInventory()
 	cb(1)
+end)
+
+-- typing in a text field must not also walk the character around
+RegisterNUICallback('inputFocus', function(focused, cb)
+	cb(1)
+	if invOpen then SetNuiFocusKeepInput(not focused) end
 end)
 
 lib.callback.register('ox_inventory:startCrafting', function(id, recipe)

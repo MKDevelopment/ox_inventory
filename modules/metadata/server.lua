@@ -11,6 +11,14 @@ for _, name in ipairs(editing.deny or {}) do
 	denied[name] = true
 end
 
+---Whole number from NUI/JSON input (which may arrive as 5.0), or nil.
+---@param value any
+---@return integer?
+local function toInt(value)
+	value = tonumber(value)
+	if value and value == math.floor(value) and value > -2^31 and value < 2^31 then return math.tointeger(value) end
+end
+
 local charset = '0123456789ABCDEFGHJKLMNPQRSTUVWXYZ'
 
 local function randomCode(length)
@@ -85,7 +93,9 @@ end)
 lib.callback.register('ox_inventory:editItemMetadata', function(source, slotId, field, value)
 	local maxLength = limits[field]
 
-	if not maxLength or math.type(slotId) ~= 'integer' or type(value) ~= 'string' or #value > maxLength * 4 then
+	slotId = toInt(slotId)
+
+	if not maxLength or not slotId or type(value) ~= 'string' or #value > maxLength * 4 then
 		return false
 	end
 
