@@ -121,5 +121,9 @@
   "ui_quickslots": "Quick access",
   "ui_folder_empty": "Nothing here yet. Drag an item onto the free slot to put it in this pocket.",
   "ui_free_slot": "Free slot",
-  "ui_slots_used": "slots used"
+  "ui_slots_used": "slots used",
+  "ui_freshness": "Freshness",
+  "ui_spoils_in": "Spoils in %s",
+  "ui_spoiled": "Spoiled",
+  "ui_cooled": "In a fridge, spoils %sx slower"
 }

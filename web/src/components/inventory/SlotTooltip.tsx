@@ -10,6 +10,25 @@ import Markdown from '../utils/Markdown';
 import WeightBar from '../utils/WeightBar';
 import { getCategoryLabel, getItemCategory } from '../../helpers/category';
 
+const formatDuration = (seconds: number) => {
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+
+  if (days > 0) return `${days} d ${hours} h`;
+  if (hours > 0) return `${hours} h ${minutes} min`;
+  return `${Math.max(1, minutes)} min`;
+};
+
+// metadata.durability of spoiling items is a unix timestamp (seconds) of when they spoil
+const formatSpoilTime = (expiresAt: number) => {
+  const remaining = expiresAt - Math.floor(Date.now() / 1000);
+
+  if (remaining <= 0) return Locale.ui_spoiled || 'Spoiled';
+
+  return (Locale.ui_spoils_in || 'Spoils in %s').replace('%s', formatDuration(remaining));
+};
+
 const formatWeight = (weight: number) =>
   weight >= 1000 ? `${(weight / 1000).toLocaleString('en-us', { maximumFractionDigits: 2 })}kg` : `${weight}g`;
 
@@ -75,9 +94,21 @@ const SlotTooltip: React.ForwardRefRenderFunction<
               {item.durability !== undefined && (
                 <div className="tooltip-durability">
                   <p>
-                    {Locale.ui_durability}: {Math.trunc(item.durability)}%
+                    {item.metadata?.degrade ? Locale.ui_freshness || 'Freshness' : Locale.ui_durability}:{' '}
+                    {Math.trunc(item.durability)}%
                   </p>
                   <WeightBar percent={item.durability} durability />
+                  {item.metadata?.degrade && item.metadata?.durability > 100 && (
+                    <p>{formatSpoilTime(item.metadata.durability)}</p>
+                  )}
+                  {item.metadata?.cooled && (
+                    <p className="tooltip-cooled">
+                      {(Locale.ui_cooled || 'In a fridge, spoils %sx slower').replace(
+                        '%s',
+                        String(item.metadata.cooled)
+                      )}
+                    </p>
+                  )}
                 </div>
               )}
               {item.metadata?.ammo !== undefined && (

@@ -59,4 +59,10 @@ setContainerProperties('pizzabox', {
 	whitelist = { 'pizza' }
 })
 
+-- portable fridge (see data/fridges.lua)
+setContainerProperties('cooler', {
+	slots = 8,
+	maxWeight = 8000,
+})
+
 return containers

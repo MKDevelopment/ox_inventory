@@ -70,6 +70,7 @@ return {
 	},
 
 	['burger'] = {
+		degrade = 720,
 		label = 'Burger',
 		weight = 220,
 		client = {
@@ -111,6 +112,15 @@ return {
 	['paperbag'] = {
 		label = 'Paper Bag',
 		weight = 1,
+		stack = false,
+		close = false,
+		consume = 0
+	},
+
+	['cooler'] = {
+		label = 'Przenośna lodówka',
+		category = 'tools',
+		weight = 2500,
 		stack = false,
 		close = false,
 		consume = 0

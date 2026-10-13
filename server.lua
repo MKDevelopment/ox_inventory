@@ -6,6 +6,7 @@ require 'modules.shops.server'
 require 'modules.pefcl.server'
 require 'modules.clothing.server'
 require 'modules.sort.server'
+require 'modules.fridge.server'
 
 if GetConvar('inventory:versioncheck', 'true') == 'true' then
     lib.versionCheck('overextended/ox_inventory')
