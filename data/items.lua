@@ -22,7 +22,7 @@ return {
 		stack = true,
 		close = true,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/police_stormram.webp',
+			image = 'police_stormram.png',
 		},
 	},
 
@@ -2529,7 +2529,7 @@ return {
 		weight = 200,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/protein.png' },
+		client = { image = 'protein.png' },
 	},
 
 	['pumpkin_soup'] = {
@@ -2593,7 +2593,7 @@ return {
 		weight = 200,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/sandwich.webp' },
+		client = { image = 'sandwich.png' },
 	},
 
 	['sandwich_chicken'] = {
@@ -2747,7 +2747,7 @@ return {
 		weight = 100,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/snikkel_candy.webp' },
+		client = { image = 'snikkel_candy.png' },
 	},
 
 	['spagetti'] = {
@@ -3054,7 +3054,7 @@ return {
 		close = true,
 		degrade = 2880.0,
 		decay = false,
-		client = { image = 'https://cfx-nui-inventory_images/images/tosti.webp' },
+		client = { image = 'tosti.png' },
 	},
 
 	['tunapizza'] = {
@@ -3073,7 +3073,7 @@ return {
 		weight = 100,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/twerks_candy.webp' },
+		client = { image = 'twerks_candy.png' },
 	},
 
 	['uwupizza'] = {
@@ -3201,7 +3201,7 @@ return {
 		weight = 500,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/beer.webp' },
+		client = { image = 'beer.png' },
 	},
 
 	['bellini'] = {
@@ -3454,7 +3454,7 @@ return {
 		weight = 0,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/coffee.webp' },
+		client = { image = 'coffee.png' },
 	},
 
 	['coffee_1x'] = {
@@ -3653,7 +3653,7 @@ return {
 		weight = 200,
 		stack = true,
 		close = false,
-		client = { image = 'https://cfx-nui-inventory_images/images/grapejuice.webp' },
+		client = { image = 'grapejuice.png' },
 	},
 
 	['grey_hound'] = {
@@ -4664,7 +4664,7 @@ return {
 		weight = 500,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/vodka.webp' },
+		client = { image = 'vodka.png' },
 	},
 
 	['water'] = {
@@ -4698,7 +4698,7 @@ return {
 		close = true,
 		consume = 1,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/water_bottle.webp',
+			image = 'water_bottle.png',
 			status = { thirst = 10000 },
 			anim = { clip = 'loop_bottle', dict = 'mp_player_intdrink', flag = 49 },
 			prop = {
@@ -4727,7 +4727,7 @@ return {
 		weight = 500,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/whiskey.webp' },
+		client = { image = 'whiskey.png' },
 	},
 
 	['whiskey_bottle'] = {
@@ -4755,7 +4755,7 @@ return {
 		weight = 300,
 		stack = true,
 		close = false,
-		client = { image = 'https://cfx-nui-inventory_images/images/wine.webp' },
+		client = { image = 'wine.png' },
 	},
 
 	['zifandel'] = {
@@ -5007,7 +5007,7 @@ return {
 		weight = 100,
 		stack = true,
 		close = false,
-		client = { image = 'https://cfx-nui-inventory_images/images/grape.webp' },
+		client = { image = 'grape.png' },
 	},
 
 	['grapefruit'] = {
@@ -5552,7 +5552,7 @@ return {
 		weight = 0,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/bandage.webp' },
+		client = { image = 'bandage.png' },
 	},
 
 	['burncream'] = {
@@ -5562,7 +5562,7 @@ return {
 		weight = 10,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/burncream.png' },
+		client = { image = 'burncream.png' },
 	},
 
 	['defibrillator'] = {
@@ -5572,7 +5572,7 @@ return {
 		weight = 2500,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/defibrillator.png' },
+		client = { image = 'defibrillator.png' },
 	},
 
 	['firstaid'] = {
@@ -5582,7 +5582,7 @@ return {
 		weight = 2500,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/firstaid.webp' },
+		client = { image = 'firstaid.png' },
 	},
 
 	['firstaidkit'] = {
@@ -5592,7 +5592,7 @@ return {
 		weight = 350,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/firstaidkit.png' },
+		client = { image = 'firstaidkit.png' },
 	},
 
 	['forceps'] = {
@@ -5602,7 +5602,7 @@ return {
 		weight = 100,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/forceps.png' },
+		client = { image = 'forceps.png' },
 	},
 
 	['icepack'] = {
@@ -5612,7 +5612,7 @@ return {
 		weight = 25,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/icepack.png' },
+		client = { image = 'icepack.png' },
 	},
 
 	['ifak'] = {
@@ -5622,7 +5622,7 @@ return {
 		weight = 150,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/ifak.png' },
+		client = { image = 'ifak.png' },
 	},
 
 	['ifaks'] = {
@@ -5632,7 +5632,7 @@ return {
 		weight = 200,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/ifaks.webp' },
+		client = { image = 'ifaks.png' },
 	},
 
 	['medbag'] = {
@@ -5642,7 +5642,7 @@ return {
 		weight = 50,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/medbag.png' },
+		client = { image = 'medbag.png' },
 	},
 
 	['medikit'] = {
@@ -5660,7 +5660,7 @@ return {
 		weight = 250,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/medkit.png' },
+		client = { image = 'medkit.png' },
 	},
 
 	['painkillers'] = {
@@ -5670,7 +5670,7 @@ return {
 		weight = 0,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/painkillers.png' },
+		client = { image = 'painkillers.png' },
 	},
 
 	['sedative'] = {
@@ -5680,7 +5680,7 @@ return {
 		weight = 25,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/sedative.png' },
+		client = { image = 'sedative.png' },
 	},
 
 	['splint'] = {
@@ -5690,7 +5690,7 @@ return {
 		weight = 50,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/splint.png' },
+		client = { image = 'splint.png' },
 	},
 
 	['suture'] = {
@@ -5700,7 +5700,7 @@ return {
 		weight = 25,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/suture.png' },
+		client = { image = 'suture.png' },
 	},
 
 	['testbandage'] = {
@@ -5742,7 +5742,7 @@ return {
 		weight = 75,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/traumakit.png' },
+		client = { image = 'traumakit.png' },
 	},
 
 	['walkstick'] = {
@@ -5752,7 +5752,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/walkstick.webp' },
+		client = { image = 'walkstick.png' },
 	},
 
 	-- Drugs (27)
@@ -5780,7 +5780,7 @@ return {
 		weight = 1000,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/coke_brick.webp' },
+		client = { image = 'coke_brick.png' },
 	},
 
 	['coke_small_brick'] = {
@@ -5791,7 +5791,7 @@ return {
 		stack = false,
 		close = true,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/coke_small_brick.webp',
+			image = 'coke_small_brick.png',
 		},
 	},
 
@@ -5811,7 +5811,7 @@ return {
 		weight = 0,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/crack_baggy.webp' },
+		client = { image = 'crack_baggy.png' },
 	},
 
 	['empty_weed_bag'] = {
@@ -5830,7 +5830,7 @@ return {
 		weight = 0,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/joint.webp' },
+		client = { image = 'joint.png' },
 	},
 
 	['marijuana'] = {
@@ -5858,7 +5858,7 @@ return {
 		weight = 0,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/oxy.webp' },
+		client = { image = 'oxy.png' },
 	},
 
 	['rolling_paper'] = {
@@ -5868,7 +5868,7 @@ return {
 		weight = 0,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/rolling_paper.webp' },
+		client = { image = 'rolling_paper.png' },
 	},
 
 	['weed_ak47'] = {
@@ -5914,7 +5914,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/weed_brick.webp' },
+		client = { image = 'weed_brick.png' },
 	},
 
 	['weed_nutrition'] = {
@@ -5925,7 +5925,7 @@ return {
 		stack = true,
 		close = true,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/weed_nutrition.webp',
+			image = 'weed_nutrition.png',
 		},
 	},
 
@@ -6200,7 +6200,7 @@ return {
 		weight = 250,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/cleaningkit.webp' },
+		client = { image = 'cleaningkit.png' },
 	},
 
 	['clutch_replacement'] = {
@@ -6503,7 +6503,7 @@ return {
 		weight = 1000,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/harness.webp' },
+		client = { image = 'harness.png' },
 	},
 
 	['i4_engine'] = {
@@ -6521,7 +6521,7 @@ return {
 		weight = 20000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/jerry_can.webp' },
+		client = { image = 'jerry_can.png' },
 	},
 
 	['kluczyk'] = {
@@ -6533,7 +6533,7 @@ return {
 		close = true,
 		consume = 0,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/labkey.webp',
+			image = 'labkey.png',
 			export = 'ms_inventory.useKey',
 		},
 	},
@@ -6579,7 +6579,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/nitrous.webp' },
+		client = { image = 'nitrous.png' },
 	},
 
 	['nitrous_bottle'] = {
@@ -6691,7 +6691,7 @@ return {
 		weight = 2500,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/repairkit.webp' },
+		client = { image = 'repairkit.png' },
 	},
 
 	['respray_kit'] = {
@@ -6709,7 +6709,7 @@ return {
 		weight = 200,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/runbooster.png' },
+		client = { image = 'runbooster.png' },
 	},
 
 	['rwd_drivetrain'] = {
@@ -6867,7 +6867,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/tirerepairkit.webp' },
+		client = { image = 'tirerepairkit.png' },
 	},
 
 	['towrope'] = {
@@ -6989,7 +6989,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/veh_armor.webp' },
+		client = { image = 'veh_armor.png' },
 	},
 
 	['veh_brakes'] = {
@@ -6999,7 +6999,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/veh_brakes.webp' },
+		client = { image = 'veh_brakes.png' },
 	},
 
 	['veh_engine'] = {
@@ -7009,7 +7009,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/veh_engine.webp' },
+		client = { image = 'veh_engine.png' },
 	},
 
 	['veh_exterior'] = {
@@ -7019,7 +7019,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/veh_exterior.webp' },
+		client = { image = 'veh_exterior.png' },
 	},
 
 	['veh_interior'] = {
@@ -7029,7 +7029,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/veh_interior.webp' },
+		client = { image = 'veh_interior.png' },
 	},
 
 	['veh_neons'] = {
@@ -7039,7 +7039,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/veh_neons.webp' },
+		client = { image = 'veh_neons.png' },
 	},
 
 	['veh_plates'] = {
@@ -7049,7 +7049,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/veh_plates.webp' },
+		client = { image = 'veh_plates.png' },
 	},
 
 	['veh_suspension'] = {
@@ -7060,7 +7060,7 @@ return {
 		stack = true,
 		close = true,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/veh_suspension.webp',
+			image = 'veh_suspension.png',
 		},
 	},
 
@@ -7071,7 +7071,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/veh_tint.webp' },
+		client = { image = 'veh_tint.png' },
 	},
 
 	['veh_toolbox'] = {
@@ -7081,7 +7081,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/veh_toolbox.webp' },
+		client = { image = 'veh_toolbox.png' },
 	},
 
 	['veh_transmission'] = {
@@ -7092,7 +7092,7 @@ return {
 		stack = true,
 		close = true,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/veh_transmission.webp',
+			image = 'veh_transmission.png',
 		},
 	},
 
@@ -7103,7 +7103,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/veh_turbo.webp' },
+		client = { image = 'veh_turbo.png' },
 	},
 
 	['veh_wheels'] = {
@@ -7113,7 +7113,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/veh_wheels.webp' },
+		client = { image = 'veh_wheels.png' },
 	},
 
 	['veh_xenons'] = {
@@ -7123,7 +7123,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/veh_xenons.webp' },
+		client = { image = 'veh_xenons.png' },
 	},
 
 	['vehicle_wheels'] = {
@@ -7177,7 +7177,7 @@ return {
 		stack = true,
 		close = true,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/advancedlockpick.webp',
+			image = 'advancedlockpick.png',
 		},
 	},
 
@@ -7188,7 +7188,7 @@ return {
 		weight = 5000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/armor.webp' },
+		client = { image = 'armor.png' },
 	},
 
 	['armour'] = {
@@ -7244,7 +7244,7 @@ return {
 		weight = 600,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/binoculars.webp' },
+		client = { image = 'binoculars.png' },
 	},
 
 	['blowpipe'] = {
@@ -7278,7 +7278,7 @@ return {
 		weight = 100,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/phone.webp' },
+		client = { image = 'phone.png' },
 	},
 
 	['camera'] = {
@@ -7314,7 +7314,7 @@ return {
 		weight = 10,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/clerk_tablet.png' },
+		client = { image = 'clerk_tablet.png' },
 	},
 
 	['clothe_soap'] = {
@@ -7351,7 +7351,7 @@ return {
 		weight = 30000,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/diving_gear.webp' },
+		client = { image = 'diving_gear.png' },
 	},
 
 	['drill'] = {
@@ -7361,7 +7361,7 @@ return {
 		weight = 20000,
 		stack = true,
 		close = false,
-		client = { image = 'https://cfx-nui-inventory_images/images/drill.webp' },
+		client = { image = 'drill.png' },
 	},
 
 	['drone'] = {
@@ -7388,7 +7388,7 @@ return {
 		weight = 100,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/electronickit.webp' },
+		client = { image = 'electronickit.png' },
 	},
 
 	['empty_evidence_bag'] = {
@@ -7425,7 +7425,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/firework1.webp' },
+		client = { image = 'firework1.png' },
 	},
 
 	['firework2'] = {
@@ -7435,7 +7435,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/firework2.webp' },
+		client = { image = 'firework2.png' },
 	},
 
 	['firework3'] = {
@@ -7445,7 +7445,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/firework3.webp' },
+		client = { image = 'firework3.png' },
 	},
 
 	['firework4'] = {
@@ -7455,7 +7455,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/firework4.webp' },
+		client = { image = 'firework4.png' },
 	},
 
 	['flat_tv'] = {
@@ -7492,7 +7492,7 @@ return {
 		weight = 100,
 		stack = true,
 		close = false,
-		client = { image = 'https://cfx-nui-inventory_images/images/gps.webp' },
+		client = { image = 'gps.png' },
 	},
 
 	['gps_tracker'] = {
@@ -7510,7 +7510,7 @@ return {
 		weight = 100,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/handcuffs.webp' },
+		client = { image = 'handcuffs.png' },
 	},
 
 	['handcuffs_key'] = {
@@ -7537,7 +7537,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/iphone.webp' },
+		client = { image = 'iphone.png' },
 	},
 
 	['ironing_board'] = {
@@ -7574,7 +7574,7 @@ return {
 		weight = 500,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/labkey.webp' },
+		client = { image = 'labkey.png' },
 	},
 
 	['laptop'] = {
@@ -7584,7 +7584,7 @@ return {
 		weight = 4000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/laptop.webp' },
+		client = { image = 'laptop.png' },
 	},
 
 	['light_remote'] = {
@@ -7603,7 +7603,7 @@ return {
 		weight = 0,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/lighter.webp' },
+		client = { image = 'lighter.png' },
 	},
 
 	['lighting_controller'] = {
@@ -7621,7 +7621,7 @@ return {
 		weight = 100,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/lockpick.webp' },
+		client = { image = 'lockpick.png' },
 	},
 
 	['megaphone'] = {
@@ -7658,7 +7658,7 @@ return {
 		weight = 100,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/newsbmic.webp' },
+		client = { image = 'newsbmic.png' },
 	},
 
 	['newscam'] = {
@@ -7668,7 +7668,7 @@ return {
 		weight = 100,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/newscam.webp' },
+		client = { image = 'newscam.png' },
 	},
 
 	['newsmic'] = {
@@ -7678,7 +7678,7 @@ return {
 		weight = 100,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/newsmic.webp' },
+		client = { image = 'newsmic.png' },
 	},
 
 	['old_phone'] = {
@@ -7731,7 +7731,7 @@ return {
 		weight = 30000,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/parachute.webp' },
+		client = { image = 'parachute.png' },
 	},
 
 	['payment_terminal'] = {
@@ -7742,7 +7742,7 @@ return {
 		stack = true,
 		close = true,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/payment_terminal.png',
+			image = 'payment_terminal.png',
 		},
 	},
 
@@ -7753,7 +7753,7 @@ return {
 		weight = 100,
 		stack = true,
 		close = false,
-		client = { image = 'https://cfx-nui-inventory_images/images/pd_gps.webp' },
+		client = { image = 'pd_gps.png' },
 	},
 
 	['pd_radio'] = {
@@ -7774,7 +7774,7 @@ return {
 		close = true,
 		consume = 0,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/phone.webp',
+			image = 'phone.png',
 			export = 'yseries.UsePhoneItem',
 		},
 	},
@@ -7786,7 +7786,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/pinger.webp' },
+		client = { image = 'pinger.png' },
 	},
 
 	['pliers'] = {
@@ -7796,7 +7796,7 @@ return {
 		weight = 25,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/pliers.png' },
+		client = { image = 'pliers.png' },
 	},
 
 	['polaroid'] = {
@@ -7842,7 +7842,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/radioscanner.webp' },
+		client = { image = 'radioscanner.png' },
 	},
 
 	['robban_tablet'] = {
@@ -7861,7 +7861,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/samsungphone.webp' },
+		client = { image = 'samsungphone.png' },
 	},
 
 	['screwdriverset'] = {
@@ -7872,7 +7872,7 @@ return {
 		stack = true,
 		close = false,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/screwdriverset.webp',
+			image = 'screwdriverset.png',
 		},
 	},
 
@@ -7998,7 +7998,7 @@ return {
 		weight = 2000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/tablet.webp' },
+		client = { image = 'tablet.png' },
 	},
 
 	['tattoo_ink'] = {
@@ -8041,7 +8041,7 @@ return {
 		weight = 1000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/thermite.webp' },
+		client = { image = 'thermite.png' },
 	},
 
 	['toaster'] = {
@@ -8089,7 +8089,7 @@ return {
 		close = true,
 		consume = 0,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/phone.webp',
+			image = 'phone.png',
 			export = 'yseries.UsePhoneItem',
 		},
 	},
@@ -8103,7 +8103,7 @@ return {
 		close = true,
 		consume = 0,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/phone.webp',
+			image = 'phone.png',
 			export = 'yseries.UsePhoneItem',
 		},
 	},
@@ -8117,7 +8117,7 @@ return {
 		close = true,
 		consume = 0,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/phone.webp',
+			image = 'phone.png',
 			export = 'yseries.UsePhoneItem',
 		},
 	},
@@ -8131,7 +8131,7 @@ return {
 		close = true,
 		consume = 0,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/phone.webp',
+			image = 'phone.png',
 			export = 'yseries.UsePhoneItem',
 		},
 	},
@@ -8145,7 +8145,7 @@ return {
 		close = true,
 		consume = 0,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/yboomer_black.png',
+			image = 'yboomer_black.png',
 			export = 'yboomer-phone.UsePhoneItem',
 		},
 	},
@@ -8159,7 +8159,7 @@ return {
 		close = true,
 		consume = 0,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/phone.webp',
+			image = 'phone.png',
 			export = 'yseries.UsePhoneItem',
 		},
 	},
@@ -8173,7 +8173,7 @@ return {
 		close = true,
 		consume = 0,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/phone.webp',
+			image = 'phone.png',
 			export = 'yseries.UsePhoneItem',
 		},
 	},
@@ -8187,7 +8187,7 @@ return {
 		close = true,
 		consume = 0,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/phone.webp',
+			image = 'phone.png',
 			export = 'yseries.UsePhoneItem',
 		},
 	},
@@ -8201,7 +8201,7 @@ return {
 		close = true,
 		consume = 0,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/phone.webp',
+			image = 'phone.png',
 			export = 'yseries.UsePhoneItem',
 		},
 	},
@@ -8215,7 +8215,7 @@ return {
 		close = true,
 		consume = 0,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/phone.webp',
+			image = 'phone.png',
 			export = 'yseries.UsePhoneItem',
 		},
 	},
@@ -8229,7 +8229,7 @@ return {
 		close = true,
 		consume = 0,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/phone.webp',
+			image = 'phone.png',
 			export = 'yseries.UsePhoneItem',
 		},
 	},
@@ -8243,7 +8243,7 @@ return {
 		close = true,
 		consume = 0,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/phone.webp',
+			image = 'phone.png',
 			export = 'yseries.UsePhoneItem',
 		},
 	},
@@ -8257,7 +8257,7 @@ return {
 		close = true,
 		consume = 0,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/phone.webp',
+			image = 'phone.png',
 			export = 'yseries.UsePhoneItem',
 		},
 	},
@@ -8271,7 +8271,7 @@ return {
 		close = true,
 		consume = 0,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/phone.webp',
+			image = 'phone.png',
 			export = 'yseries.UsePhoneItem',
 		},
 	},
@@ -8285,7 +8285,7 @@ return {
 		close = true,
 		consume = 0,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/phone.webp',
+			image = 'phone.png',
 			export = 'yseries.UsePhoneItem',
 		},
 	},
@@ -8297,7 +8297,7 @@ return {
 		weight = 5,
 		stack = false,
 		close = false,
-		client = { image = 'https://cfx-nui-inventory_images/images/bank_card.webp' },
+		client = { image = 'bank_card.png' },
 	},
 
 	['zipties'] = {
@@ -8324,7 +8324,7 @@ return {
 		weight = 0,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/bank_card.webp' },
+		client = { image = 'bank_card.png' },
 	},
 
 	['certificate'] = {
@@ -8334,7 +8334,7 @@ return {
 		weight = 0,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/certificate.webp' },
+		client = { image = 'certificate.png' },
 	},
 
 	['creditcard_lvl_1'] = {
@@ -8371,8 +8371,10 @@ return {
 		weight = 10,
 		stack = false,
 		close = true,
+		consume = 0,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/debitcard_business.png',
+			export = 'tgg-banking.UseCardOnAtm',
+			image = 'debitcard_business.png',
 		},
 	},
 
@@ -8383,8 +8385,10 @@ return {
 		weight = 10,
 		stack = false,
 		close = true,
+		consume = 0,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/debitcard_personal.png',
+			export = 'tgg-banking.UseCardOnAtm',
+			image = 'debitcard_personal.png',
 		},
 	},
 
@@ -8395,8 +8399,10 @@ return {
 		weight = 10,
 		stack = false,
 		close = true,
+		consume = 0,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/debitcard_shared.png',
+			export = 'tgg-banking.UseCardOnAtm',
+			image = 'debitcard_shared.png',
 		},
 	},
 
@@ -8417,7 +8423,7 @@ return {
 		stack = false,
 		close = false,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/driver_license.webp',
+			image = 'driver_license.png',
 		},
 	},
 
@@ -8437,7 +8443,7 @@ return {
 		weight = 3,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/empty_invoice.png' },
+		client = { image = 'empty_invoice.png' },
 	},
 
 	['empty_ticket'] = {
@@ -8447,7 +8453,7 @@ return {
 		weight = 2,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/empty_ticket.png' },
+		client = { image = 'empty_ticket.png' },
 	},
 
 	['id_card'] = {
@@ -8457,7 +8463,7 @@ return {
 		weight = 0,
 		stack = false,
 		close = false,
-		client = { image = 'https://cfx-nui-inventory_images/images/id_card.webp' },
+		client = { image = 'id_card.png' },
 	},
 
 	['identification'] = {
@@ -8473,7 +8479,7 @@ return {
 		weight = 4,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/invoice.png' },
+		client = { image = 'invoice.png' },
 	},
 
 	['lawyerpass'] = {
@@ -8483,7 +8489,7 @@ return {
 		weight = 0,
 		stack = false,
 		close = false,
-		client = { image = 'https://cfx-nui-inventory_images/images/lawyerpass.webp' },
+		client = { image = 'lawyerpass.png' },
 	},
 
 	['magazine'] = {
@@ -8528,7 +8534,7 @@ return {
 		stack = false,
 		close = true,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/printerdocument.webp',
+			image = 'printerdocument.png',
 		},
 	},
 
@@ -8539,7 +8545,7 @@ return {
 		weight = 1,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/receipt.png' },
+		client = { image = 'receipt.png' },
 	},
 
 	['rental_document'] = {
@@ -8559,7 +8565,7 @@ return {
 		stack = true,
 		close = true,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/security_card_01.webp',
+			image = 'security_card_01.png',
 		},
 	},
 
@@ -8571,7 +8577,7 @@ return {
 		stack = true,
 		close = true,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/security_card_02.webp',
+			image = 'security_card_02.png',
 		},
 	},
 
@@ -8583,7 +8589,7 @@ return {
 		stack = false,
 		close = true,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/signed_vehicle_sale_agreement.png',
+			image = 'signed_vehicle_sale_agreement.png',
 		},
 	},
 
@@ -8594,7 +8600,7 @@ return {
 		weight = 0,
 		stack = false,
 		close = false,
-		client = { image = 'https://cfx-nui-inventory_images/images/stickynote.webp' },
+		client = { image = 'stickynote.png' },
 	},
 
 	['testlicense'] = {
@@ -8613,7 +8619,7 @@ return {
 		weight = 1,
 		stack = true,
 		close = false,
-		client = { image = 'https://cfx-nui-inventory_images/images/thermal_paper.png' },
+		client = { image = 'thermal_paper.png' },
 	},
 
 	['ticket'] = {
@@ -8623,7 +8629,7 @@ return {
 		weight = 3,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/ticket.png' },
+		client = { image = 'ticket.png' },
 	},
 
 	['vehicle_sale_agreement'] = {
@@ -8634,7 +8640,7 @@ return {
 		stack = true,
 		close = true,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/vehicle_sale_agreement.png',
+			image = 'vehicle_sale_agreement.png',
 		},
 	},
 
@@ -8656,7 +8662,7 @@ return {
 		stack = true,
 		close = true,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/antipatharia_coral.webp',
+			image = 'antipatharia_coral.png',
 		},
 	},
 
@@ -8688,7 +8694,7 @@ return {
 		weight = 0,
 		stack = true,
 		close = false,
-		client = { image = 'https://cfx-nui-inventory_images/images/casinochips.webp' },
+		client = { image = 'casinochips.png' },
 	},
 
 	['cheap_ring'] = {
@@ -8707,7 +8713,7 @@ return {
 		weight = 200,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/cryptostick.webp' },
+		client = { image = 'cryptostick.png' },
 	},
 
 	['decorative_head'] = {
@@ -8727,7 +8733,7 @@ return {
 		stack = true,
 		close = true,
 		client = {
-			image = 'https://cfx-nui-inventory_images/images/dendrogyra_coral.webp',
+			image = 'dendrogyra_coral.png',
 		},
 	},
 
@@ -8747,7 +8753,7 @@ return {
 		weight = 1500,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/diamond_ring.webp' },
+		client = { image = 'diamond_ring.png' },
 	},
 
 	['fitbit'] = {
@@ -8757,7 +8763,7 @@ return {
 		weight = 500,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/fitbit.webp' },
+		client = { image = 'fitbit.png' },
 	},
 
 	['flamenco_figurine'] = {
@@ -8811,7 +8817,7 @@ return {
 		weight = 7000,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/goldbar.webp' },
+		client = { image = 'goldbar.png' },
 	},
 
 	['goldchain'] = {
@@ -8821,7 +8827,7 @@ return {
 		weight = 1500,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/goldchain.webp' },
+		client = { image = 'goldchain.png' },
 	},
 
 	['markedbills'] = {
@@ -8831,7 +8837,7 @@ return {
 		weight = 1000,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/markedbills.webp' },
+		client = { image = 'markedbills.png' },
 	},
 
 	['money'] = {
@@ -8850,7 +8856,7 @@ return {
 		weight = 0,
 		stack = false,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/moneybag.webp' },
+		client = { image = 'moneybag.png' },
 	},
 
 	['obelisk_figurine'] = {
@@ -8914,7 +8920,7 @@ return {
 		weight = 1500,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/rolex.webp' },
+		client = { image = 'rolex.png' },
 	},
 
 	['rose'] = {
@@ -8990,7 +8996,7 @@ return {
 		weight = 300,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/aluminum.webp' },
+		client = { image = 'aluminum.png' },
 	},
 
 	['aluminumoxide'] = {
@@ -9000,7 +9006,7 @@ return {
 		weight = 100,
 		stack = true,
 		close = false,
-		client = { image = 'https://cfx-nui-inventory_images/images/aluminumoxide.webp' },
+		client = { image = 'aluminumoxide.png' },
 	},
 
 	['cloth'] = {
@@ -9027,7 +9033,7 @@ return {
 		weight = 100,
 		stack = true,
 		close = false,
-		client = { image = 'https://cfx-nui-inventory_images/images/copper.webp' },
+		client = { image = 'copper.png' },
 	},
 
 	['cutted_wood'] = {
@@ -9062,7 +9068,7 @@ return {
 		weight = 100,
 		stack = true,
 		close = false,
-		client = { image = 'https://cfx-nui-inventory_images/images/glass.webp' },
+		client = { image = 'glass.png' },
 	},
 
 	['iron'] = {
@@ -9072,7 +9078,7 @@ return {
 		weight = 1200,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/iron.webp' },
+		client = { image = 'iron.png' },
 	},
 
 	['iron_ingot'] = {
@@ -9091,7 +9097,7 @@ return {
 		weight = 100,
 		stack = true,
 		close = false,
-		client = { image = 'https://cfx-nui-inventory_images/images/ironoxide.webp' },
+		client = { image = 'ironoxide.png' },
 	},
 
 	['metalscrap'] = {
@@ -9101,7 +9107,7 @@ return {
 		weight = 100,
 		stack = true,
 		close = false,
-		client = { image = 'https://cfx-nui-inventory_images/images/metalscrap.webp' },
+		client = { image = 'metalscrap.png' },
 	},
 
 	['packaged_plank'] = {
@@ -9119,7 +9125,7 @@ return {
 		weight = 200,
 		stack = true,
 		close = true,
-		client = { image = 'https://cfx-nui-inventory_images/images/plastic.webp' },
+		client = { image = 'plastic.png' },
 	},
 
 	['rubber'] = {
@@ -9129,7 +9135,7 @@ return {
 		weight = 100,
 		stack = true,
 		close = false,
-		client = { image = 'https://cfx-nui-inventory_images/images/rubber.webp' },
+		client = { image = 'rubber.png' },
 	},
 
 	['scrapmetal'] = {
@@ -9145,7 +9151,7 @@ return {
 		weight = 100,
 		stack = true,
 		close = false,
-		client = { image = 'https://cfx-nui-inventory_images/images/steel.webp' },
+		client = { image = 'steel.png' },
 	},
 
 	['stone'] = {
