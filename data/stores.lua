@@ -15,6 +15,10 @@ return {
 		name = { 'displayName' },
 	},
 
+	-- A business card pays from the account of one of the holder's jobs whose tgg-banking account
+	-- name equals the card's name. true: if no name matches, use the holder's only job account.
+	businessCardFallback = false,
+
 	-- Add card purchases to the account history in tgg-banking (AddTransaction).
 	-- Turn off if personal card payments show up twice because tgg-banking already logs ESX bank changes.
 	recordTransactions = true,

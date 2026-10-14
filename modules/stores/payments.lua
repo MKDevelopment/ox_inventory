@@ -47,7 +47,9 @@ local function readField(metadata, keys)
 end
 
 ---The business account a card pays from: one of the player's jobs whose tgg-banking account
----carries the card's name, or the only job with an account.
+---carries the card's name. With `businessCardFallback`, a card whose name matches no account
+---pays from the only job account the player has (off by default: any business card found would
+---then spend the holder's employer's money).
 ---@return table? account, string? society
 local function businessAccount(source, cardName)
 	local player = server.GetPlayerFromId(source)
@@ -67,7 +69,7 @@ local function businessAccount(source, cardName)
 		end
 	end
 
-	if count == 1 then return found, foundSociety end
+	if count == 1 and config.businessCardFallback then return found, foundSociety end
 end
 
 ---@param source number
