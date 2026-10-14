@@ -1,0 +1,101 @@
+name: MyStory release
+
+# Builds the inventory UI and publishes ox_inventory.zip and inventory_images.zip as a GitHub release.
+# Uses only GITHUB_TOKEN, unlike release.yml which needs the upstream project's GitHub App secrets.
+#
+# Release a new version by either
+#  - changing MYSTORY_VERSION (e.g. 1.0.1) and pushing it to any branch: the release is tagged
+#    mystory-v<version> on that commit, or
+#  - pushing a tag mystory-v*, or running the workflow manually.
+on:
+  push:
+    # branches must be listed too: with only `tags`, pushes to branches never trigger the workflow
+    branches:
+      - "**"
+    tags:
+      - "mystory-v*"
+    # ignored for tag pushes
+    paths:
+      - MYSTORY_VERSION
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag, e.g. mystory-v1.0.1"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve tag
+        run: |
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            echo "TAG=${{ github.event.inputs.tag }}" >> "$GITHUB_ENV"
+          elif [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "TAG=${{ github.ref_name }}" >> "$GITHUB_ENV"
+          else
+            echo "TAG=mystory-v$(tr -d '[:space:]' < MYSTORY_VERSION)" >> "$GITHUB_ENV"
+          fi
+
+      - name: Install zip and webp tools
+        run: sudo apt-get update && sudo apt-get install -y zip webp
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+        working-directory: web
+
+      - name: Build UI
+        run: bun run build
+        working-directory: web
+
+      - name: Bundle ox_inventory
+        run: |
+          mkdir -p ./temp/ox_inventory/web
+          cp ./{server.lua,README.md,LICENSE,fxmanifest.lua,client.lua,init.lua} ./temp/ox_inventory
+          cp -r ./{setup,modules,data,locales} ./temp/ox_inventory
+          cp -r ./web/build ./temp/ox_inventory/web/build
+          cp ./web/LICENSE ./temp/ox_inventory/web/build
+          cp ./web/node_modules/@fontsource/rubik/LICENSE ./temp/ox_inventory/web/build/assets/RUBIK-OFL-LICENSE
+          cp -r ./web/images ./temp/ox_inventory/web/images
+          cd ./temp && zip -qr ../ox_inventory.zip ./ox_inventory
+
+      - name: Bundle inventory_images (webp)
+        run: |
+          mkdir -p ./temp/inventory_images/images
+          for image in ./web/images/*.png; do
+            cwebp -quiet -q 90 -alpha_q 100 "$image" -o "./temp/inventory_images/images/$(basename "${image%.png}").webp"
+          done
+          cat > ./temp/inventory_images/fxmanifest.lua <<'EOF'
+          fx_version 'cerulean'
+          game 'gta5'
+
+          name 'inventory_images'
+          description 'Item images (webp) shared by ox_inventory and other resources'
+
+          files {
+          	'images/*.webp',
+          }
+          EOF
+          cd ./temp && zip -qr ../inventory_images.zip ./inventory_images
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          target_commitish: ${{ github.sha }}
+          name: ${{ env.TAG }}
+          generate_release_notes: true
+          files: |
+            ox_inventory.zip
+            inventory_images.zip

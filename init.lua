@@ -22,6 +22,9 @@ shared = {
     networkdumpsters = GetConvarBool('inventory:networkdumpsters', false)
 }
 
+-- ESX only: xPlayer keys whose job name and grade are used as inventory groups, e.g. ["job", "job2"]
+shared.esxjobs = json.decode(GetConvar('inventory:esxjobs', '["job"]')) or { 'job' }
+
 shared.dropslots = GetConvarInt('inventory:dropslots', shared.playerslots)
 shared.dropweight = GetConvarInt('inventory:dropweight', shared.playerweight)
 
@@ -94,7 +97,9 @@ else
         weaponanims = GetConvarBool('inventory:weaponanims', true),
         itemnotify = GetConvarBool('inventory:itemnotify', true),
         weaponnotify = GetConvarBool('inventory:weaponnotify', true),
-        imagepath = GetConvar('inventory:imagepath', 'nui://ox_inventory/web/images'),
+        imagepath = GetConvar('inventory:imagepath', ('https://cfx-nui-%s/web/images'):format(GetCurrentResourceName())),
+        -- extension of the item images in imagepath, e.g. webp when images come from a separate resource
+        imageformat = GetConvar('inventory:imageformat', 'png'),
         dropprops = GetConvarBool('inventory:dropprops', false),
         dropmodel = joaat(GetConvar('inventory:dropmodel', 'prop_med_bag_01b')),
         weaponmismatch = GetConvarBool('inventory:weaponmismatch', true),
@@ -237,9 +242,10 @@ if not LoadResourceFile(shared.resource, 'web/build/index.html') then
 end
 
 -- No we're not going to support qtarget any longer.
-if shared.target and GetResourceState('ox_target') ~= 'started' then
+-- tgiann-target provides the ox_target API (and exports under that name)
+if shared.target and GetResourceState('ox_target') ~= 'started' and GetResourceState('tgiann-target') ~= 'started' then
     shared.target = false
-    warn('ox_target is not loaded - it should start before ox_inventory')
+    warn('ox_target (or tgiann-target) is not loaded - it should start before ox_inventory')
 end
 
 if lib.context == 'server' then

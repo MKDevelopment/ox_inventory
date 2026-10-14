@@ -2,6 +2,11 @@ if not lib then return end
 
 require 'modules.bridge.client'
 require 'modules.interface.client'
+require 'modules.clothing.client'
+require 'modules.sort.client'
+require 'modules.metadata.client'
+require 'modules.stores.client'
+require 'modules.wallet.client'
 
 local Utils = require 'modules.utils.client'
 local Weapon = require 'modules.weapon.client'
@@ -200,6 +205,11 @@ function client.openInventory(inv, data)
             return lib.notify({ id = 'cannot_perform', type = 'error', description = locale('cannot_perform') })
         end
 
+        -- default shops open in the MyStory store UI (cart and payment choice), see modules/stores
+        if client.shopsInStoreUi then
+            return TriggerEvent('ox_inventory:openShopStore', data?.type, data?.id)
+        end
+
         left, right, accessError = lib.callback.await('ox_inventory:openShop', 200, data)
     elseif inv == 'crafting' then
         if cache.vehicle then
@@ -314,11 +324,22 @@ function client.openInventory(inv, data)
                 currentInventory.door = vehicleClass == 12 and { 2, 3 } or Vehicles.Storage[vehicleHash] and 4 or 5
             end
 
+            local door = currentInventory.door
+
             while currentInventory.entity == entity and invOpen and DoesEntityExist(entity) and Inventory.CanAccessTrunk(entity) do
                 Wait(100)
             end
 
-            if invOpen then client.closeInventory() end
+            if invOpen and currentInventory.entity == entity then
+                client.closeInventory()
+            elseif invOpen and DoesEntityExist(entity) then
+                -- another inventory (e.g. the wardrobe) replaced the trunk while the player panel stays open
+                if type(door) == 'table' then
+                    for i = 1, #door do SetVehicleDoorShut(entity, door[i], false) end
+                else
+                    SetVehicleDoorShut(entity, door, false)
+                end
+            end
         end)
     end
 
@@ -356,6 +377,8 @@ end)
 
 local Animations = lib.load('data.animations')
 local Items = require 'modules.items.client'
+local Food = require 'modules.food.client'
+local FoodTiers = (lib.load('data.food') or {}).tiers or {}
 local usingItem = false
 
 ---@param data { name: string, label: string, count: number, slot: number, metadata: table<string, any>, weight: number }
@@ -407,7 +430,7 @@ lib.callback.register('ox_inventory:usingItem', function(data, noAnim)
 
 			if item.status then
 				if client.setPlayerStatus then
-					client.setPlayerStatus(item.status)
+					Food.applyStatus(item.status, data.metadata, data.name)
 				end
 			end
 
@@ -1242,7 +1265,9 @@ RegisterNetEvent('ox_inventory:setPlayerInventory', function(currentDrops, inven
 			description = v.description,
 			buttons = buttons,
 			ammoName = v.ammoname,
-			image = v.client?.image
+			image = v.client?.image,
+			category = v.category or (v.client?.status and (v.client.status.hunger or v.client.status.thirst) and 'food') or nil,
+			tier = v.tier and FoodTiers[v.tier] and { name = v.tier, caps = FoodTiers[v.tier] } or nil,
 		}
 	end
 
@@ -1348,7 +1373,10 @@ RegisterNetEvent('ox_inventory:setPlayerInventory', function(currentDrops, inven
 				items = PlayerData.inventory,
 				maxWeight = shared.playerweight,
 			},
-			imagepath = client.imagepath
+			imagepath = client.imagepath,
+			imageformat = client.imageformat,
+			clothing = GetResourceState('tgiann-clothing') == 'started',
+			clothingImage = (lib.load('data.clothing') or {}).image
 		}
 	})
 
@@ -1784,9 +1812,23 @@ RegisterNUICallback('useButton', function(data, cb)
 	cb(1)
 end)
 
+-- back to "no secondary inventory" (the ground) after the clothing tab closed its wardrobe
+AddEventHandler('ox_inventory:resetSecondary', function()
+	if not invOpen then return end
+
+	currentInventory = defaultInventory
+	SendNUIMessage({ action = 'setupInventory', data = { rightInventory = currentInventory } })
+end)
+
 RegisterNUICallback('exit', function(_, cb)
 	client.closeInventory()
 	cb(1)
+end)
+
+-- typing in a text field must not also walk the character around
+RegisterNUICallback('inputFocus', function(focused, cb)
+	cb(1)
+	if invOpen then SetNuiFocusKeepInput(not focused) end
 end)
 
 lib.callback.register('ox_inventory:startCrafting', function(id, recipe)

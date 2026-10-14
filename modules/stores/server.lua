@@ -1,0 +1,673 @@
+if not lib then return end
+
+local Inventory = require 'modules.inventory.server'
+local Items = require 'modules.items.server'
+local Payments = require 'modules.stores.payments'
+local Cart = require 'modules.stores.cart'
+local Taxes = require 'modules.stores.taxes'
+
+local config = lib.load('data.stores') or {}
+local STOCK_PREFIX = 'storestock_'
+
+---Whole number from NUI/JSON input (which may arrive as 5.0), or nil.
+---@param value any
+---@return integer?
+local function toInt(value)
+	value = tonumber(value)
+	if value and value == math.floor(value) and value > -2^31 and value < 2^31 then return math.tointeger(value) end
+end
+
+
+local webhook = GetConvar('inventory:storeswebhook', '')
+
+---@param title string
+---@param description string
+---@param colour number?
+local function discordLog(title, description, colour)
+	if webhook == '' then return end
+
+	PerformHttpRequest(webhook, function() end, 'POST', json.encode({
+		username = 'MyStory Stores',
+		embeds = { { title = title, description = description, color = colour or 7101695, footer = { text = os.date('%d.%m.%Y %H:%M:%S') } } },
+	}), { ['Content-Type'] = 'application/json' })
+end
+
+---@param source number
+local function describePlayer(source)
+	local inv = Inventory(source)
+	return ('%s (ID %d, %s)'):format(inv and inv.label or GetPlayerName(source), source, inv and inv.owner or '?')
+end
+
+---@class StoreItem
+---@field price number
+---@field enabled boolean
+
+---@class Store
+---@field id number
+---@field label string
+---@field type 'infinite' | 'stock'
+---@field coords vector3
+---@field blip number?
+---@field owner string? identifier of the owning character
+---@field job string? job that runs the store
+---@field grade number minimum job grade that may manage it
+---@field cash number
+---@field items table<string, StoreItem>
+
+---@type table<number, Store>
+local Stores = {}
+
+MySQL.ready(function()
+	MySQL.query.await([[
+		CREATE TABLE IF NOT EXISTS `mystory_stores` (
+			`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+			`label` VARCHAR(64) NOT NULL,
+			`type` VARCHAR(16) NOT NULL DEFAULT 'stock',
+			`coords` VARCHAR(128) NOT NULL,
+			`blip` INT NULL DEFAULT NULL,
+			`owner` VARCHAR(64) NULL DEFAULT NULL,
+			`job` VARCHAR(32) NULL DEFAULT NULL,
+			`grade` INT NOT NULL DEFAULT 0,
+			`cash` INT UNSIGNED NOT NULL DEFAULT 0,
+			PRIMARY KEY (`id`)
+		)
+	]])
+
+	MySQL.query.await([[
+		CREATE TABLE IF NOT EXISTS `mystory_store_items` (
+			`store` INT UNSIGNED NOT NULL,
+			`item` VARCHAR(64) NOT NULL,
+			`price` INT UNSIGNED NOT NULL,
+			`enabled` TINYINT(1) NOT NULL DEFAULT 1,
+			PRIMARY KEY (`store`, `item`)
+		)
+	]])
+
+	MySQL.query.await([[
+		CREATE TABLE IF NOT EXISTS `mystory_store_sales` (
+			`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+			`store` INT UNSIGNED NOT NULL,
+			`buyer` VARCHAR(64) NULL DEFAULT NULL,
+			`buyer_name` VARCHAR(64) NULL DEFAULT NULL,
+			`items` TEXT NOT NULL,
+			`total` INT UNSIGNED NOT NULL,
+			`method` VARCHAR(8) NOT NULL,
+			`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`id`),
+			KEY `store_created` (`store`, `created_at`)
+		)
+	]])
+
+	-- shopkeeper ped (added after the first release)
+	for column, definition in pairs({ ped_model = 'VARCHAR(64) NULL DEFAULT NULL', heading = 'FLOAT NOT NULL DEFAULT 0' }) do
+		if not MySQL.scalar.await('SHOW COLUMNS FROM `mystory_stores` LIKE ?', { column }) then
+			MySQL.query.await(('ALTER TABLE `mystory_stores` ADD COLUMN `%s` %s'):format(column, definition))
+		end
+	end
+
+	if (config.salesRetentionDays or 90) > 0 then
+		MySQL.update.await('DELETE FROM `mystory_store_sales` WHERE `created_at` < NOW() - INTERVAL ? DAY', { config.salesRetentionDays or 90 })
+	end
+
+	for _, row in ipairs(MySQL.query.await('SELECT * FROM `mystory_stores`') or {}) do
+		local coords = json.decode(row.coords)
+
+		Stores[row.id] = {
+			id = row.id,
+			label = row.label,
+			type = row.type == 'infinite' and 'infinite' or 'stock',
+			coords = vec3(coords.x, coords.y, coords.z),
+			blip = row.blip,
+			owner = row.owner,
+			job = row.job,
+			grade = row.grade,
+			cash = row.cash,
+			ped = row.ped_model,
+			heading = row.heading or 0.0,
+			items = {},
+		}
+	end
+
+	for _, row in ipairs(MySQL.query.await('SELECT * FROM `mystory_store_items`') or {}) do
+		local store = Stores[row.store]
+
+		if store and Items(row.item) then
+			store.items[row.item] = { price = row.price, enabled = row.enabled == 1 }
+		end
+	end
+
+	for _, store in pairs(Stores) do
+		if store.type == 'stock' then
+			exports.ox_inventory:RegisterStash(STOCK_PREFIX .. store.id, locale('store_stock_label', store.label), config.stockSlots or 60, config.stockWeight or 500000, nil, nil, store.coords)
+		end
+	end
+
+	Taxes.init({
+		storage = Taxes.mysqlStorage(),
+		getStore = function(id) return Stores[id] end,
+		saveCash = function(store)
+			MySQL.update('UPDATE `mystory_stores` SET `cash` = ? WHERE `id` = ?', { store.cash, store.id })
+		end,
+	})
+
+	Taxes.onSettled = function(store, row, paid, status)
+		discordLog(locale('store_log_tax'), locale('store_log_tax_text', store.id, store.label, paid, row.tax - row.paid - paid, status), 3447003)
+	end
+
+	-- settle ended tax periods now and every 10 minutes
+	CreateThread(function()
+		while true do
+			Taxes.settle()
+			Wait(600000)
+		end
+	end)
+
+	TriggerClientEvent('ox_inventory:storesUpdated', -1)
+end)
+
+local function broadcastPoints()
+	TriggerClientEvent('ox_inventory:storesUpdated', -1)
+end
+
+---@param source number
+local function isAdmin(source)
+	return IsPlayerAceAllowed(source, config.adminAce or 'group.admin')
+end
+
+---@param source number
+---@param store Store
+---@return boolean
+local function canManage(source, store)
+	if isAdmin(source) then return true end
+
+	local inv = Inventory(source) --[[@as OxInventory?]]
+	if not inv?.player then return false end
+
+	if store.owner and store.owner == inv.owner then return true end
+
+	if store.job then
+		local grade = inv.player.groups[store.job]
+		if grade and grade >= store.grade then return true end
+	end
+
+	return false
+end
+
+---Store positions, peds and blips for one player (with whether they may manage each store).
+---@param source number
+local function getPoints(source)
+	local points = {}
+
+	for id, store in pairs(Stores) do
+		points[#points + 1] = {
+			id = id,
+			label = store.label,
+			coords = store.coords,
+			heading = store.heading,
+			ped = store.ped,
+			blip = store.blip,
+			manage = canManage(source, store) and (store.owner ~= nil or store.job ~= nil or isAdmin(source)),
+		}
+	end
+
+	return points
+end
+
+lib.callback.register('ox_inventory:getStores', getPoints)
+
+---@param source number
+---@param store Store
+local function isNear(source, store)
+	local ped = GetPlayerPed(source)
+	return ped ~= 0 and #(GetEntityCoords(ped) - store.coords) <= (config.interactDistance or 5.0)
+end
+
+-- Only managers may open a stock room, whichever way the open request arrives.
+exports.ox_inventory:registerHook('openInventory', function(payload)
+	local id = tonumber(tostring(payload.inventoryId):match('^' .. STOCK_PREFIX .. '(%d+)$'))
+	local store = id and Stores[id]
+
+	if store and not canManage(payload.source, store) then return false end
+end, { inventoryFilter = { '^' .. STOCK_PREFIX } })
+
+---Stock of every item in one pass over the stock room (instead of one pass per product).
+---@param store Store
+---@return table<string, number>
+local function getAllStock(store)
+	local counts = {}
+	if store.type == 'infinite' then return setmetatable(counts, { __index = function() return 9999 end }) end
+
+	local inv = Inventory(STOCK_PREFIX .. store.id)
+
+	for _, slot in pairs(inv and inv.items or {}) do
+		counts[slot.name] = (counts[slot.name] or 0) + slot.count
+	end
+
+	return setmetatable(counts, { __index = function() return 0 end })
+end
+
+---Everything a customer (and a manager) sees when opening the store.
+lib.callback.register('ox_inventory:openStore', function(source, id)
+	local store = Stores[toInt(id)]
+	if not store or not isNear(source, store) then return end
+
+	local products = {}
+	local stockCounts = getAllStock(store)
+
+	for name, entry in pairs(store.items) do
+		if entry.enabled then
+			local stock = stockCounts[name]
+
+			products[#products + 1] = { name = name, price = entry.price, stock = stock }
+		end
+	end
+
+	table.sort(products, function(a, b) return a.name < b.name end)
+
+	local manage = canManage(source, store)
+	local management
+
+	if manage then
+		management = { cash = store.cash, type = store.type, items = {} }
+
+		for name, entry in pairs(store.items) do
+			management.items[#management.items + 1] = {
+				name = name,
+				price = entry.price,
+				enabled = entry.enabled,
+				stock = stockCounts[name],
+			}
+		end
+
+		table.sort(management.items, function(a, b) return a.name < b.name end)
+	end
+
+	return {
+		id = store.id,
+		label = store.label,
+		products = products,
+		management = management,
+		payments = Payments.list(source),
+	}
+end)
+
+---@param source number
+local checkoutCooldown = {}
+
+AddEventHandler('playerDropped', function()
+	checkoutCooldown[source] = nil
+end)
+
+---Buys every line in the cart at once, or nothing.
+lib.callback.register('ox_inventory:checkoutStore', function(source, id, cart, paymentId)
+	local store = Stores[toInt(id)]
+	if not store or type(cart) ~= 'table' or type(paymentId) ~= 'string' then return false end
+	if not isNear(source, store) then return false, 'store_too_far' end
+
+	local now = GetGameTimer()
+	if checkoutCooldown[source] and now - checkoutCooldown[source] < 1000 then return false end
+	checkoutCooldown[source] = now
+
+	local inv = Inventory(source) --[[@as OxInventory?]]
+	if not inv?.player or Player(source).state.invBusy then return false end
+
+	local lines, total, totalWeight = {}, 0, 0
+	local stockCounts = getAllStock(store)
+
+	for name, count in pairs(cart) do
+		count = toInt(count)
+
+		local entry = type(name) == 'string' and store.items[name]
+		local item = entry and Items(name)
+
+		if not entry or not entry.enabled or not item or not count or count < 1 or count > 1000 then
+			return false, 'store_cart_invalid'
+		end
+
+		if stockCounts[name] < count then return false, 'store_out_of_stock' end
+
+		lines[#lines + 1] = { name = name, count = count, item = item, price = entry.price }
+		total += entry.price * count
+		totalWeight += (item.weight or 0) * count
+	end
+
+	if #lines == 0 then return false end
+	if not Inventory.CanCarryWeight(inv, totalWeight) then return false, 'cannot_carry' end
+
+	if store.type == 'stock' then
+		-- stock items keep their own metadata (freshness), so every stock slot taken is a new stack
+		for i = 1, #lines do
+			local line, remaining, stacks = lines[i], lines[i].count, 0
+
+			for _, slot in pairs(Inventory.GetSlotsWithItem(STOCK_PREFIX .. store.id, line.name) or {}) do
+				stacks += 1
+				remaining -= slot.count
+				if remaining <= 0 then break end
+			end
+
+			line.stacks = stacks
+		end
+	end
+
+	if not Cart.canCarry(inv, lines) then return false, 'cannot_carry' end
+
+	local payment = Payments.resolve(source, paymentId)
+	if not payment then return false, 'store_payment_invalid' end
+
+	local paid, result = Payments.charge(source, paymentId, total, locale('store_bank_reason', store.label))
+	if not paid then return false, result end
+
+	-- cash, personal or business (sales history, receipt and logs)
+	local method = payment.kind
+	local refund = 0
+
+	for i = 1, #lines do
+		local line = lines[i]
+		local delivered = 0
+
+		if store.type == 'infinite' then
+			if Inventory.AddItem(inv, line.name, line.count) then delivered = line.count end
+		else
+			-- move the real items (with their metadata, e.g. freshness) out of the stock room
+			local stockId = STOCK_PREFIX .. store.id
+
+			for _, slot in pairs(Inventory.GetSlotsWithItem(stockId, line.name) or {}) do
+				local take = math.min(line.count - delivered, slot.count)
+				local metadata = slot.metadata
+
+				if Inventory.RemoveItem(stockId, line.name, take, metadata, slot.slot) then
+					if Inventory.AddItem(inv, line.name, take, metadata) then
+						delivered += take
+					else
+						Inventory.AddItem(stockId, line.name, take, metadata)
+						break
+					end
+				end
+
+				if delivered >= line.count then break end
+			end
+		end
+
+		-- anything not handed over is paid back
+		if delivered < line.count then
+			refund += line.price * (line.count - delivered)
+			line.count = delivered
+		end
+	end
+
+	if refund > 0 then
+		Payments.refund(source, result, refund)
+		total -= refund
+	end
+
+	if store.owner or store.job then
+		store.cash += total
+		MySQL.update('UPDATE `mystory_stores` SET `cash` = ? WHERE `id` = ?', { store.cash, store.id })
+	end
+
+	-- the tax included in the prices: owned stores accrue it, others pay the city now
+	local taxLines = {}
+
+	for i = 1, #lines do
+		local line = lines[i]
+		if line.count > 0 then taxLines[#taxLines + 1] = { name = line.name, total = line.price * line.count } end
+	end
+
+	local tax = Taxes.forLines(taxLines)
+	Taxes.collect(store, total, tax)
+
+	lib.logger(inv.owner, 'storeCheckout', ('"%s" paid %d (%s) in store %d (%s)'):format(inv.label, total, method, store.id, store.label))
+
+	local summary = {}
+
+	for i = 1, #lines do
+		local line = lines[i]
+
+		if line.count > 0 then
+			summary[#summary + 1] = { name = line.name, count = line.count, price = line.price }
+		end
+	end
+
+	MySQL.insert('INSERT INTO `mystory_store_sales` (`store`, `buyer`, `buyer_name`, `items`, `total`, `method`) VALUES (?, ?, ?, ?, ?, ?)', {
+		store.id, inv.owner, inv.label, json.encode(summary), total, method,
+	})
+
+	if config.receipts ~= false and Items('receipt') then
+		local rows = {}
+
+		for i = 1, #summary do
+			local line = summary[i]
+			rows[i] = ('%dx %s, $%d'):format(line.count, Items(line.name).label, line.price * line.count)
+		end
+
+		local receipt = {
+			label = locale('store_receipt_label', store.label),
+			description = locale('store_receipt_description', os.date('%d.%m.%Y %H:%M'), table.concat(rows, '  \n'), total, locale(method == 'cash' and 'store_method_cash' or 'store_method_bank'))
+				.. (tax > 0 and ('  \n' .. locale('store_receipt_tax', tax)) or ''),
+			store = store.label,
+			total = total,
+		}
+
+		if Inventory.CanCarryItem(inv, 'receipt', 1, receipt) then
+			Inventory.AddItem(inv, 'receipt', 1, receipt)
+		end
+	end
+
+	if total >= (config.logThreshold or 5000) then
+		discordLog(locale('store_log_purchase'), locale('store_log_purchase_text', describePlayer(source), total, method, store.id, store.label))
+	end
+
+	return true, total
+end)
+
+---Manager actions: prices, assortment, cash withdrawal and the stock room.
+lib.callback.register('ox_inventory:manageStore', function(source, id, action, data)
+	local store = Stores[toInt(id)]
+	if not store or not canManage(source, store) or not isNear(source, store) then return false end
+
+	if action == 'setItem' then
+		local name, price = data?.name, toInt(data?.price)
+
+		if type(name) ~= 'string' or not Items(name) or not price or price < 0 or price > 10000000 then
+			return false
+		end
+
+		local enabled = data.enabled ~= false
+		store.items[name] = { price = price, enabled = enabled }
+
+		MySQL.insert('INSERT INTO `mystory_store_items` (`store`, `item`, `price`, `enabled`) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE `price` = VALUES(`price`), `enabled` = VALUES(`enabled`)', { store.id, name, price, enabled })
+
+		return true
+	elseif action == 'removeItem' then
+		if type(data?.name) ~= 'string' then return false end
+
+		store.items[data.name] = nil
+		MySQL.update('DELETE FROM `mystory_store_items` WHERE `store` = ? AND `item` = ?', { store.id, data.name })
+
+		return true
+	elseif action == 'withdraw' then
+		-- tax owed for the current and overdue periods stays in the till; the owed query waits on the
+		-- database, so the till is read and emptied only after it, with nothing in between that yields
+		local owed = Taxes.owed(store.id)
+		local amount = store.cash - owed
+		if amount <= 0 then return false, 'store_tax_reserved' end
+
+		local inv = Inventory(source)
+		if not Inventory.CanCarryItem(inv, 'money', amount) then return false, 'cannot_carry' end
+
+		store.cash -= amount
+		Inventory.AddItem(inv, 'money', amount)
+		MySQL.update('UPDATE `mystory_stores` SET `cash` = ? WHERE `id` = ?', { store.cash, store.id })
+		lib.logger(inv.owner, 'storeWithdraw', ('withdrew %d from store %d (%s)'):format(amount, store.id, store.label))
+		discordLog(locale('store_log_withdraw'), locale('store_log_withdraw_text', describePlayer(source), amount, store.id, store.label), 16098115)
+
+		return true, amount
+	elseif action == 'taxes' then
+		return true, Taxes.summary(store.id)
+	elseif action == 'history' then
+		local sales = MySQL.query.await('SELECT `buyer_name`, `items`, `total`, `method`, UNIX_TIMESTAMP(`created_at`) AS `time` FROM `mystory_store_sales` WHERE `store` = ? ORDER BY `id` DESC LIMIT ?', {
+			store.id, config.historyLimit or 50,
+		}) or {}
+
+		local revenue = MySQL.single.await([[
+			SELECT
+				COALESCE(SUM(CASE WHEN `created_at` >= CURDATE() THEN `total` END), 0) AS `today`,
+				COALESCE(SUM(CASE WHEN `created_at` >= NOW() - INTERVAL 7 DAY THEN `total` END), 0) AS `week`
+			FROM `mystory_store_sales` WHERE `store` = ? AND `created_at` >= NOW() - INTERVAL 7 DAY
+		]], { store.id }) or {}
+
+		for i = 1, #sales do
+			sales[i].items = json.decode(sales[i].items)
+		end
+
+		return true, { sales = sales, today = tonumber(revenue.today) or 0, week = tonumber(revenue.week) or 0 }
+	elseif action == 'openStock' then
+		if store.type ~= 'stock' then return false end
+
+		return exports.ox_inventory:forceOpenInventory(source, 'stash', STOCK_PREFIX .. store.id) ~= nil
+	end
+
+	return false
+end)
+
+---@param source number
+---@param data table
+---@return table?
+local function readStoreFields(source, data)
+	if type(data) ~= 'table' or type(data.label) ~= 'string' then return end
+
+	local label = data.label:gsub('[%c<>]', ''):sub(1, 64)
+	if label == '' then return end
+
+	local owner
+
+	if data.ownerId then
+		local ownerInv = Inventory(tonumber(data.ownerId))
+		if not ownerInv?.player then return end
+		owner = ownerInv.owner
+	end
+
+	local ped = type(data.ped) == 'string' and data.ped:match('^[%w_]+$') and data.ped:sub(1, 64) or nil
+
+	return {
+		label = label,
+		ped = ped,
+		type = data.type == 'infinite' and 'infinite' or 'stock',
+		blip = toInt(data.blip),
+		owner = owner,
+		job = type(data.job) == 'string' and data.job ~= '' and data.job:sub(1, 32) or nil,
+		grade = toInt(data.grade) or 0,
+	}
+end
+
+---Admin panel: list, create at the admin's position, edit, move and delete stores.
+lib.callback.register('ox_inventory:adminStores', function(source, action, data)
+	if not isAdmin(source) then return false end
+
+	if action == 'list' then
+		local list = {}
+
+		for id, store in pairs(Stores) do
+			local count = 0
+			for _ in pairs(store.items) do count += 1 end
+
+			list[#list + 1] = {
+				id = id,
+				label = store.label,
+				type = store.type,
+				owner = store.owner,
+				job = store.job,
+				grade = store.grade,
+				blip = store.blip,
+				ped = store.ped,
+				cash = store.cash,
+				items = count,
+				distance = #(GetEntityCoords(GetPlayerPed(source)) - store.coords),
+			}
+		end
+
+		table.sort(list, function(a, b) return a.id < b.id end)
+		return list
+	elseif action == 'create' then
+		local fields = readStoreFields(source, data)
+		if not fields then return false end
+
+		local ped = GetPlayerPed(source)
+		local coords, heading = GetEntityCoords(ped), GetEntityHeading(ped)
+		local id = MySQL.insert.await('INSERT INTO `mystory_stores` (`label`, `type`, `coords`, `blip`, `owner`, `job`, `grade`, `ped_model`, `heading`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', {
+			fields.label, fields.type, json.encode({ x = coords.x, y = coords.y, z = coords.z }), fields.blip, fields.owner, fields.job, fields.grade, fields.ped, heading,
+		})
+
+		if not id then return false end
+
+		Stores[id] = {
+			id = id,
+			label = fields.label,
+			type = fields.type,
+			coords = coords,
+			blip = fields.blip,
+			owner = fields.owner,
+			job = fields.job,
+			grade = fields.grade,
+			ped = fields.ped,
+			heading = heading,
+			cash = 0,
+			items = {},
+		}
+
+		if fields.type == 'stock' then
+			exports.ox_inventory:RegisterStash(STOCK_PREFIX .. id, locale('store_stock_label', fields.label), config.stockSlots or 60, config.stockWeight or 500000, nil, nil, coords)
+		end
+
+		broadcastPoints()
+		discordLog(locale('store_log_create'), locale('store_log_create_text', describePlayer(source), id, fields.label), 5763719)
+		return true, id
+	end
+
+	local store = Stores[toInt(data?.id)]
+	if not store then return false end
+
+	if action == 'update' then
+		local fields = readStoreFields(source, data)
+		if not fields then return false end
+
+		-- keep the current owner unless a new one is given or it is explicitly cleared
+		if not data.ownerId and not data.clearOwner then fields.owner = store.owner end
+
+		for k, v in pairs(fields) do store[k] = v end
+
+		if store.type == 'stock' then
+			exports.ox_inventory:RegisterStash(STOCK_PREFIX .. store.id, locale('store_stock_label', store.label), config.stockSlots or 60, config.stockWeight or 500000, nil, nil, store.coords)
+		end
+
+		MySQL.update('UPDATE `mystory_stores` SET `label` = ?, `type` = ?, `blip` = ?, `owner` = ?, `job` = ?, `grade` = ?, `ped_model` = ? WHERE `id` = ?', {
+			store.label, store.type, store.blip, store.owner, store.job, store.grade, store.ped, store.id,
+		})
+
+		broadcastPoints()
+		discordLog(locale('store_log_update'), locale('store_log_update_text', describePlayer(source), store.id, store.label, store.type, store.job or '-', store.grade, store.owner or '-'))
+		return true
+	elseif action == 'move' then
+		-- the shopkeeper stands where the admin stands, facing the same way
+		local ped = GetPlayerPed(source)
+		store.coords, store.heading = GetEntityCoords(ped), GetEntityHeading(ped)
+		MySQL.update('UPDATE `mystory_stores` SET `coords` = ?, `heading` = ? WHERE `id` = ?', { json.encode({ x = store.coords.x, y = store.coords.y, z = store.coords.z }), store.heading, store.id })
+
+		if store.type == 'stock' then
+			exports.ox_inventory:RegisterStash(STOCK_PREFIX .. store.id, locale('store_stock_label', store.label), config.stockSlots or 60, config.stockWeight or 500000, nil, nil, store.coords)
+		end
+
+		broadcastPoints()
+		return true
+	elseif action == 'delete' then
+		discordLog(locale('store_log_delete'), locale('store_log_delete_text', describePlayer(source), store.id, store.label, store.cash), 15548997)
+		Stores[store.id] = nil
+		MySQL.update('DELETE FROM `mystory_stores` WHERE `id` = ?', { store.id })
+		MySQL.update('DELETE FROM `mystory_store_items` WHERE `store` = ?', { store.id })
+
+		broadcastPoints()
+		return true
+	end
+
+	return false
+end)

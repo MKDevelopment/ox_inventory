@@ -108,6 +108,18 @@ local function createShop(shopType, id)
 	return shop[id]
 end
 
+---Shop by type and location index (a location's shop is created on first use), for the store UI.
+---@param shopType string
+---@param id? number
+function server.getShop(shopType, id)
+	local shop = Shops[shopType]
+
+	if not shop then return end
+	if shop.items then return shop end
+
+	return id and (shop[id] or createShop(shopType, id))
+end
+
 for shopType, shopDetails in pairs(lib.load('data.shops') or {}) do
 	registerShopType(shopType, shopDetails)
 end

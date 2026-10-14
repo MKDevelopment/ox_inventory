@@ -14,10 +14,14 @@ if webHook ~= '' then
     local headers = { ['Content-Type'] = 'application/json' }
 
     function Utils.IsValidImageUrl(url)
-        local isUri = url:match("^nui://.+")
-        if isUri then
-            local resource, extension = url:match('^nui://([^/]+)/.-%.(%l+)$')
+        -- resource files: https://cfx-nui-<resource>/... (current) or the legacy nui://<resource>/...
+        local resource, extension = url:match('^https://cfx%-nui%-([^/]+)/.-%.(%l+)$')
 
+        if not resource then
+            resource, extension = url:match('^nui://([^/]+)/.-%.(%l+)$')
+        end
+
+        if resource or url:match('^nui://') or url:match('^https://cfx%-nui%-') then
             if not resource or not extension then return false end
 
             local resourceState = GetResourceState(resource)

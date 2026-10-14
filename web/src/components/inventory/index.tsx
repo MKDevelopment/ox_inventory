@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import useNuiEvent from '../../hooks/useNuiEvent';
 import InventoryControl from './InventoryControl';
 import InventoryHotbar from './InventoryHotbar';
-import { useAppDispatch } from '../../store';
+import { store, useAppDispatch, useAppSelector } from '../../store';
+import { clothingClosed, closeClothing, setCamera, setEquipment } from '../../store/clothing';
+import { ClothingStage, isWardrobe } from '../mystory/ClothingView';
 import { refreshSlots, setAdditionalMetadata, setupInventory } from '../../store/inventory';
 import { useExitListener } from '../../hooks/useExitListener';
 import type { Inventory as InventoryProps } from '../../typings';
@@ -11,28 +13,42 @@ import LeftInventory from './LeftInventory';
 import Tooltip from '../utils/Tooltip';
 import { closeTooltip } from '../../store/tooltip';
 import InventoryContext from './InventoryContext';
+import MetadataEditor from '../mystory/MetadataEditor';
 import { closeContextMenu } from '../../store/contextMenu';
 import Fade from '../utils/transitions/Fade';
 
 const Inventory: React.FC = () => {
   const [inventoryVisible, setInventoryVisible] = useState(false);
   const dispatch = useAppDispatch();
+  const clothingOpen = useAppSelector((state) => state.clothing.open);
 
   useNuiEvent<boolean>('setInventoryVisible', setInventoryVisible);
   useNuiEvent<false>('closeInventory', () => {
     setInventoryVisible(false);
+    dispatch(clothingClosed());
     dispatch(closeContextMenu());
     dispatch(closeTooltip());
   });
   useExitListener(setInventoryVisible);
 
+  useEffect(() => {
+    if (!inventoryVisible) dispatch(clothingClosed());
+  }, [inventoryVisible]);
+
   useNuiEvent<{
     leftInventory?: InventoryProps;
     rightInventory?: InventoryProps;
   }>('setupInventory', (data) => {
+    // another inventory replaced the wardrobe: leave the clothing tab so it is visible
+    const { clothing } = store.getState();
+    if (clothing.open && data.rightInventory && !isWardrobe(data.rightInventory)) closeClothing(dispatch);
+
     dispatch(setupInventory(data));
     !inventoryVisible && setInventoryVisible(true);
   });
+
+  useNuiEvent('clothingEquipment', (data) => dispatch(setEquipment(data)));
+  useNuiEvent<boolean>('clothingCamera', (camera) => dispatch(setCamera(camera)));
 
   useNuiEvent('refreshSlots', (data) => dispatch(refreshSlots(data)));
 
@@ -43,12 +59,17 @@ const Inventory: React.FC = () => {
   return (
     <>
       <Fade in={inventoryVisible}>
-        <div className="inventory-wrapper">
-          <LeftInventory />
-          <InventoryControl />
-          <RightInventory />
+        <div className={`inventory-wrapper${clothingOpen ? ' clothing-open' : ''}`}>
+          <div className="inventory-layout">
+            <div className="inventory-columns">
+              <LeftInventory />
+              {clothingOpen ? <ClothingStage /> : <RightInventory />}
+            </div>
+            <InventoryControl />
+          </div>
           <Tooltip />
           <InventoryContext />
+          <MetadataEditor />
         </div>
       </Fade>
       <InventoryHotbar />

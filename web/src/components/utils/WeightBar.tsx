@@ -14,10 +14,11 @@ const colorMixer = (rgbA: number[], rgbB: number[], amountToMix: number) => {
 };
 
 const COLORS = {
-  // Colors used - https://materialui.co/flatuicolors
-  primaryColor: [231, 76, 60], // Red (Pomegranate)
-  secondColor: [39, 174, 96], // Green (Nephritis)
-  accentColor: [211, 84, 0], // Orange (Oragne)
+  // MyStoryRP palette
+  primaryColor: [239, 68, 68], // Red
+  secondColor: [109, 74, 255], // Purple (accent)
+  accentColor: [245, 164, 67], // Orange
+  durabilityColor: [34, 197, 94], // Green (online badge)
 };
 
 const WeightBar: React.FC<{ percent: number; durability?: boolean }> = ({ percent, durability }) => {
@@ -26,7 +27,7 @@ const WeightBar: React.FC<{ percent: number; durability?: boolean }> = ({ percen
       durability
         ? percent < 50
           ? colorMixer(COLORS.accentColor, COLORS.primaryColor, percent / 100)
-          : colorMixer(COLORS.secondColor, COLORS.accentColor, percent / 100)
+          : colorMixer(COLORS.durabilityColor, COLORS.accentColor, percent / 100)
         : percent > 50
           ? colorMixer(COLORS.primaryColor, COLORS.accentColor, percent / 100)
           : colorMixer(COLORS.accentColor, COLORS.secondColor, percent / 50),

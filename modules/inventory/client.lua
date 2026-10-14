@@ -127,6 +127,8 @@ end
 ---@param search 'slots' | 1 | 'count' | 2
 ---@param item table | string
 ---@param metadata? table | string
+local Wallet = require 'modules.wallet.client'
+
 function Inventory.Search(search, item, metadata)
     if not PlayerData.loaded then
         if not coroutine.running() then
@@ -162,6 +164,17 @@ function Inventory.Search(search, item, metadata)
                         end
                     end
                 end
+            end
+
+            -- cash and cards kept in carried wallets
+            if search == 1 then
+                for _, v in ipairs(Wallet.items(item)) do
+                    if not metadata or table.contains(v.metadata, metadata) then
+                        returnData[item][#returnData[item] + 1] = v
+                    end
+                end
+            elseif search == 2 then
+                returnData[item] += Wallet.count(item, metadata)
             end
         end
         if next(returnData) then return items == 1 and returnData[item[1]] or returnData end
@@ -211,6 +224,12 @@ function Inventory.GetSlotWithItem(itemName, metadata, strict)
             return slotData
         end
     end
+
+    for _, slotData in ipairs(Wallet.items(item.name)) do
+        if not metadata or tablematch(slotData.metadata, metadata) then
+            return slotData
+        end
+    end
 end
 
 exports('GetSlotWithItem', Inventory.GetSlotWithItem)
@@ -243,6 +262,13 @@ function Inventory.GetSlotsWithItem(itemName, metadata, strict)
 
     for _, slotData in pairs(inventory) do
         if slotData and slotData.name == item.name and (not metadata or tablematch(slotData.metadata, metadata)) then
+            n += 1
+            response[n] = slotData
+        end
+    end
+
+    for _, slotData in ipairs(Wallet.items(item.name)) do
+        if not metadata or tablematch(slotData.metadata, metadata) then
             n += 1
             response[n] = slotData
         end
@@ -281,7 +307,7 @@ function Inventory.GetItemCount(itemName, metadata, strict)
     if not inventory or not item then return 0 end
 
     if not metadata then
-        return item.count
+        return item.count + Wallet.count(item.name)
     end
 
 
@@ -295,7 +321,7 @@ function Inventory.GetItemCount(itemName, metadata, strict)
         end
     end
 
-    return count
+    return count + Wallet.count(item.name, metadata, strict)
 end
 
 exports('GetItemCount', Inventory.GetItemCount)

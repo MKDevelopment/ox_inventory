@@ -9,4 +9,6 @@ export type ItemData = {
   buttons?: string[];
   ammoName?: string;
   image?: string;
+  category?: string;
+  tier?: { name: string; caps: Record<string, number> };
 };

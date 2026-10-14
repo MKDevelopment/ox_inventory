@@ -1,3 +1,4 @@
+import { useImageFallback } from '../../store/imageFallback';
 import React, { useContext } from 'react';
 import { createPortal } from 'react-dom';
 import { TransitionGroup } from 'react-transition-group';
@@ -26,6 +27,7 @@ export const useItemNotifications = () => {
 
 const ItemNotification = React.forwardRef(
   (props: { item: ItemNotificationProps; style?: React.CSSProperties }, ref: React.ForwardedRef<HTMLDivElement>) => {
+    useImageFallback();
     const slotItem = props.item.item;
 
     return (

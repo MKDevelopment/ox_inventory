@@ -3,14 +3,49 @@ local Items = require 'modules.items.server'
 
 AddEventHandler('esx:playerDropped', server.playerDropped)
 
-AddEventHandler('esx:setJob', function(source, job, lastJob)
-	local inventory = Inventory(source)
-	if not inventory then return end
-	inventory.player.groups[lastJob.name] = nil
-	inventory.player.groups[job.name] = job.grade
-end)
-
 local ESX
+
+---Builds the group table from every configured ESX job key (e.g. job, job2).
+---@param player table xPlayer
+---@param override? table<string, table> job data that may not be set on the xPlayer yet
+---@return table<string, number>
+local function getJobGroups(player, override)
+	local groups = {}
+
+	for i = 1, #shared.esxjobs do
+		local key = shared.esxjobs[i]
+		local job = override and override[key] or player[key]
+
+		if not job and player.get then
+			job = player.get(key)
+		end
+
+		if type(job) == 'table' and job.name then
+			local grade = tonumber(job.grade) or 0
+
+			if not groups[job.name] or groups[job.name] < grade then
+				groups[job.name] = grade
+			end
+		end
+	end
+
+	return groups
+end
+
+for i = 1, #shared.esxjobs do
+	local key = shared.esxjobs[i]
+
+	-- esx:setJob, esx:setJob2, ...
+	AddEventHandler(('esx:set%s'):format(key:gsub('^%l', string.upper)), function(source, job)
+		local inventory = Inventory(source)
+		if not inventory or not ESX then return end
+
+		local player = ESX.GetPlayerFromId(source)
+		if not player then return end
+
+		inventory.player.groups = getJobGroups(player, { [key] = job })
+	end)
+end
 
 SetTimeout(500, function()
     lib.checkDependency('es_extended', '1.6.0', true)
@@ -34,14 +69,10 @@ server.accounts.black_money = 0
 
 ---@diagnostic disable-next-line: duplicate-set-field
 function server.setPlayerData(player)
-	local groups = {
-		[player.job.name] = player.job.grade
-	}
-
 	return {
 		source = player.source,
 		name = player.name,
-		groups = groups,
+		groups = getJobGroups(player),
 		sex = player.sex or player.variables.sex,
 		dateofbirth = player.dateofbirth or player.variables.dateofbirth,
 	}
@@ -117,10 +148,20 @@ function server.convertInventory(playerId, items)
 end
 
 ---@diagnostic disable-next-line: duplicate-set-field
-function server.isPlayerBoss(playerId)
+function server.isPlayerBoss(playerId, group)
 	local xPlayer = ESX.GetPlayerFromId(playerId)
+	if not xPlayer then return false end
 
-	return xPlayer.job.grade_name == 'boss'
+	for i = 1, #shared.esxjobs do
+		local key = shared.esxjobs[i]
+		local job = xPlayer[key] or (xPlayer.get and xPlayer.get(key))
+
+		if type(job) == 'table' and (not group or job.name == group) and job.grade_name == 'boss' then
+			return true
+		end
+	end
+
+	return false
 end
 
 MySQL.ready(function()

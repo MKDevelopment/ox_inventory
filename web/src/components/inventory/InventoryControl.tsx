@@ -3,11 +3,13 @@ import { useDrop } from 'react-dnd';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { selectItemAmount, setItemAmount } from '../../store/inventory';
 import { DragSource } from '../../typings';
-import { onUse } from '../../dnd/onUse';
+import { onUse, onUseInContainer } from '../../dnd/onUse';
 import { onGive } from '../../dnd/onGive';
 import { fetchNui } from '../../utils/fetchNui';
 import { Locale } from '../../store/locale';
 import UsefulControls from './UsefulControls';
+
+const AMOUNT_PRESETS = [0, 1, 5, 10];
 
 const formatAmount = (n: number) => (n > 0 ? n.toLocaleString('en-US') : '0');
 const digitsOnly = (s: string) => s.replace(/\D/g, '');
@@ -25,7 +27,8 @@ const InventoryControl: React.FC = () => {
   const [, use] = useDrop<DragSource, void, any>(() => ({
     accept: 'SLOT',
     drop: (source) => {
-      source.inventory === 'player' && onUse(source.item);
+      if (source.inventory === 'player') onUse(source.item);
+      else if (source.inventory === 'container') onUseInContainer(source.item);
     },
   }));
 
@@ -43,6 +46,11 @@ const InventoryControl: React.FC = () => {
     setValue(formatAmount(num));
     dispatch(setItemAmount(num));
     cursorRef.current = digitsBefore;
+  };
+
+  const setAmount = (amount: number) => {
+    setValue(formatAmount(amount));
+    dispatch(setItemAmount(amount));
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) =>
@@ -80,44 +88,54 @@ const InventoryControl: React.FC = () => {
   return (
     <>
       <UsefulControls infoVisible={infoVisible} setInfoVisible={setInfoVisible} />
-      <div className="inventory-control">
-        <div className="inventory-control-wrapper">
-          <input
-            className="inventory-control-input"
-            type="text"
-            ref={inputRef}
-            value={value}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            min={0}
-          />
-          <button
-            className="inventory-control-button"
-            ref={(el) => {
-              use(el);
-            }}
-          >
-            {Locale.ui_use || 'Use'}
-          </button>
-          <button
-            className="inventory-control-button"
-            ref={(el) => {
-              give(el);
-            }}
-          >
-            {Locale.ui_give || 'Give'}
-          </button>
-          <button className="inventory-control-button" onClick={() => fetchNui('exit')}>
-            {Locale.ui_close || 'Close'}
-          </button>
+      <div className="action-dock">
+        <div className="action-amount">
+          <label>{Locale.ui_amount || 'Amount'}</label>
+          <input type="text" ref={inputRef} value={value} onChange={handleChange} onKeyDown={handleKeyDown} min={0} />
+          <div className="action-presets">
+            {AMOUNT_PRESETS.map((preset) => (
+              <button
+                key={preset}
+                className={itemAmount === preset ? 'active' : undefined}
+                onClick={() => setAmount(preset)}
+              >
+                {preset === 0 ? Locale.ui_amount_all || 'All' : preset}
+              </button>
+            ))}
+          </div>
         </div>
+        <button
+          className="action-drop primary"
+          ref={(el) => {
+            use(el);
+          }}
+        >
+          {Locale.ui_use || 'Use'}
+        </button>
+        <button
+          className="action-drop"
+          ref={(el) => {
+            give(el);
+          }}
+        >
+          {Locale.ui_give || 'Give'}
+        </button>
+        <div className="action-hints">
+          <span>
+            <kbd>Shift</kbd> {Locale.ui_hint_split || 'split'}
+          </span>
+          <span>
+            <kbd>Ctrl</kbd> + <kbd>LMB</kbd> {Locale.ui_hint_quickmove || 'quick move'}
+          </span>
+        </div>
+        <button className="action-icon" onClick={() => setInfoVisible(true)} title={Locale.ui_usefulcontrols}>
+          ?
+        </button>
+        <button className="action-close" onClick={() => fetchNui('exit')}>
+          {Locale.ui_close || 'Close'}
+          <kbd>Esc</kbd>
+        </button>
       </div>
-
-      <button className="useful-controls-button" onClick={() => setInfoVisible(true)}>
-        <svg xmlns="http://www.w3.org/2000/svg" height="2em" viewBox="0 0 524 524">
-          <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z" />
-        </svg>
-      </button>
     </>
   );
 };

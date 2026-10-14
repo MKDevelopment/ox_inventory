@@ -2,8 +2,10 @@ import InventoryComponent from './components/inventory';
 import useNuiEvent from './hooks/useNuiEvent';
 import { Items } from './store/items';
 import { Locale } from './store/locale';
-import { setImagePath } from './store/imagepath';
+import { setImageFormat, setImagePath } from './store/imagepath';
 import { setupInventory } from './store/inventory';
+import { setClothingEnabled } from './store/clothing';
+import { setClothingImage } from './helpers/clothing';
 import { Inventory } from './typings';
 import { useAppDispatch } from './store';
 import { debugData } from './utils/debugData';
@@ -11,6 +13,7 @@ import DragPreview from './components/utils/DragPreview';
 import { fetchNui } from './utils/fetchNui';
 import { useDragDropManager } from 'react-dnd';
 import KeyPress from './components/utils/KeyPress';
+import StoreApp from './components/stores/StoreApp';
 
 debugData([
   {
@@ -57,6 +60,15 @@ debugData([
               imageurl: 'https://i.imgur.com/2xHhTTz.png',
             },
           },
+          {
+            slot: 7,
+            name: 'WEAPON_PISTOL',
+            weight: 1130,
+            count: 1,
+            metadata: { durability: 64, serial: 'POL123', ammo: 12 },
+          },
+          { slot: 8, name: 'clothing_top', weight: 300, count: 1, metadata: { label: 'Top #42' } },
+          { slot: 9, name: 'bandage', weight: 115, count: 4 },
         ],
       },
       rightInventory: {
@@ -96,12 +108,18 @@ const App: React.FC = () => {
     items: typeof Items;
     leftInventory: Inventory;
     imagepath: string;
-  }>('init', ({ locale, items, leftInventory, imagepath }) => {
+    imageformat?: string;
+    clothing?: boolean;
+    clothingImage?: string;
+  }>('init', ({ locale, items, leftInventory, imagepath, imageformat, clothing, clothingImage }) => {
     for (const name in locale) Locale[name] = locale[name];
     for (const name in items) Items[name] = items[name];
 
     setImagePath(imagepath);
+    setImageFormat(imageformat);
     dispatch(setupInventory({ leftInventory }));
+    dispatch(setClothingEnabled(!!clothing));
+    setClothingImage(clothingImage);
   });
 
   fetchNui('uiLoaded', {});
@@ -115,9 +133,16 @@ const App: React.FC = () => {
       <InventoryComponent />
       <DragPreview />
       <KeyPress />
+      <StoreApp />
     </div>
   );
 };
+
+const isTextField = (target: EventTarget | null) =>
+  target instanceof HTMLInputElement && (target.type === 'text' || target.type === 'number');
+
+addEventListener('focusin', (event) => isTextField(event.target) && fetchNui('inputFocus', true));
+addEventListener('focusout', (event) => isTextField(event.target) && fetchNui('inputFocus', false));
 
 addEventListener('dragstart', function (event) {
   event.preventDefault();

@@ -6,16 +6,31 @@ end
 
 local ItemList = {}
 local isServer = IsDuplicityVersion()
+local FoodDefaults = require 'modules.food.shared'
+local foodConfig = lib.load('data.food') or {}
 
 local function setImagePath(path)
     if path then
-        return path:match('^[%w]+://') and path or ('%s/%s'):format(client.imagepath, path)
+        if path:match('^[%w]+://') then return path end
+
+        -- images named in data/items.lua (e.g. card_bank.png) follow inventory:imageformat
+        if client.imageformat ~= 'png' then
+            path = path:gsub('%.png$', '.' .. client.imageformat)
+        end
+
+        return ('%s/%s'):format(client.imagepath, path)
     end
 end
 
 ---@param data OxItem
 local function newItem(data)
 	data.weight = data.weight or 0
+
+	-- a label can be translated in locales/*.json as item_<name>
+	local key = 'item_' .. data.name
+	local translated = locale(key)
+	if translated and translated ~= key then data.label = translated end
+	FoodDefaults.apply(data, foodConfig)
 
 	if data.close == nil then
 		data.close = true
