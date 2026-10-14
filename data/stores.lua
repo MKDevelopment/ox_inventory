@@ -3,14 +3,27 @@ return {
 	command = 'stores',
 	adminAce = 'group.admin',
 
-	-- 'cash' uses the money item, 'bank' the ESX bank account
-	paymentMethods = { 'cash', 'bank' },
+	-- Payment options offered at checkout, built from what the player carries:
+	-- cash = money in the pocket and wallets; personal / business = tgg-banking debit cards in the
+	-- inventory or a wallet. Shared cards are never offered (tgg-banking cannot charge them).
+	payments = { cash = true, personal = true, business = true },
+
+	-- Metadata keys of tgg-banking cards (first key found wins)
+	cardFields = {
+		id = { 'cardId', 'id' },
+		number = { 'cardNumber' },
+		name = { 'displayName' },
+	},
+
+	-- Add card purchases to the account history in tgg-banking (AddTransaction).
+	-- Turn off if personal card payments show up twice because tgg-banking already logs ESX bank changes.
+	recordTransactions = true,
 
 	interactDistance = 5.0,
 	stockSlots = 60,
 	stockWeight = 500000,
 
-	-- Bank adapter used by card payments. Replace both functions if MyStory runs its own banking script.
+	-- Personal card payments: the player's ESX bank account (tgg-banking's personal account in ESX mode).
 	bank = {
 		---@return number
 		getBalance = function(source)
