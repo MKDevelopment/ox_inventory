@@ -109,9 +109,12 @@ end
 
 ---Item export of c_* and clothe_set (client.export = 'ox_inventory.useClothing'): puts the garment on;
 ---whatever it replaces comes back as an item.
-exports('useClothing', function(_, slot)
+---@param slot table garment slot data (pocket or wardrobe)
+---@param fromWardrobe? boolean
+---@return boolean
+local function wearGarment(slot, fromWardrobe)
 	local resource = clothing()
-	if not resource or not canChange() or type(slot) ~= 'table' then return end
+	if not resource or not canChange() or type(slot) ~= 'table' then return false end
 
 	local metadata = slot.metadata or {}
 	local ped = cache.ped
@@ -138,30 +141,37 @@ exports('useClothing', function(_, slot)
 
 	if not playAnimation() then return end
 
-	local success, response = lib.callback.await('ox_inventory:clothing:wear', false, slot.slot, worn)
-	if not success then return notifyError(response) end
+	local success, response = lib.callback.await('ox_inventory:clothing:wear', false, slot.slot, worn, fromWardrobe == true)
+	if not success then notifyError(response) return false end
 
 	applyParts(resource, ped, response)
 
 	if slot.name == 'c_mask' then resource:ApplyMaskFaceReset() end
 
 	resource:SaveSkin()
+	return true
+end
+
+exports('useClothing', function(_, slot)
+	wearGarment(slot)
 end)
 
 ---@param name string garment item
-local function takeOff(name)
+---@param toSlot? integer wardrobe slot to take it off into
+---@return boolean
+local function takeOff(name, toSlot)
 	local resource = clothing()
-	if not resource or not canChange() then return end
+	if not resource or not canChange() then return false end
 
 	local def = config.items[name]
 	local ped = cache.ped
 
-	if not isWorn(ped, def) then return notifyError('clothing_not_worn') end
-	if not playAnimation() then return end
+	if not isWorn(ped, def) then notifyError('clothing_not_worn') return false end
+	if not playAnimation() then return false end
 
 	local parts = readGarment(ped, def)
-	local success, reason = lib.callback.await('ox_inventory:clothing:takeOff', false, name, parts)
-	if not success then return notifyError(reason) end
+	local success, reason = lib.callback.await('ox_inventory:clothing:takeOff', false, name, parts, toSlot)
+	if not success then notifyError(reason) return false end
 
 	local naked = {}
 
@@ -172,6 +182,7 @@ local function takeOff(name)
 
 	applyParts(resource, ped, naked)
 	resource:SaveSkin()
+	return true
 end
 
 RegisterCommand(config.command, function()
@@ -200,3 +211,134 @@ RegisterCommand(config.command, function()
 	lib.registerContext({ id = 'ox_inventory:clothing', title = locale('clothing_menu'), options = options })
 	lib.showContext('ox_inventory:clothing')
 end, false)
+
+-- Clothing tab: live camera on the character, equipment slots and the pocket wardrobe
+
+local Utils = require 'modules.utils.client'
+
+local ZOOM = {
+	head = { distance = 0.9, height = 0.65, fov = 32 },
+	body = { distance = 2.4, height = 0.15, fov = 42 },
+	feet = { distance = 1.3, height = -0.75, fov = 36 },
+}
+
+local cam, savedHeading
+
+---@return table[] the 13 garments with what is worn
+local function equipment()
+	local ped = cache.ped
+	local list = {}
+
+	for _, name in ipairs(config.order) do
+		local def = config.items[name]
+		if def then list[#list + 1] = { item = name, worn = isWorn(ped, def), parts = readGarment(ped, def) } end
+	end
+
+	return list
+end
+
+local function sendEquipment()
+	SendNUIMessage({ action = 'clothingEquipment', data = equipment() })
+end
+
+---Camera in front of the player, aimed past them so the ped stands on the right half of the screen.
+local function placeCamera(preset)
+	local ped = cache.ped
+	local zoom = ZOOM[preset] or ZOOM.body
+	local position = GetOffsetFromEntityInWorldCoords(ped, 0.0, zoom.distance, zoom.height)
+	local target = GetOffsetFromEntityInWorldCoords(ped, zoom.distance * 0.32, 0.0, zoom.height)
+
+	if not cam then
+		cam = CreateCamWithParams('DEFAULT_SCRIPTED_CAMERA', position.x, position.y, position.z, 0.0, 0.0, 0.0, zoom.fov, false, 0)
+		SetCamActive(cam, true)
+		RenderScriptCams(true, true, 400, true, true)
+	else
+		SetCamCoord(cam, position.x, position.y, position.z)
+		SetCamFov(cam, zoom.fov)
+	end
+
+	PointCamAtCoord(cam, target.x, target.y, target.z)
+end
+
+local function stopCamera()
+	if not cam then return end
+
+	RenderScriptCams(false, true, 400, true, true)
+	DestroyCam(cam, false)
+	cam = nil
+
+	if savedHeading then
+		SetEntityHeading(cache.ped, savedHeading)
+		savedHeading = nil
+	end
+end
+
+---@return boolean
+local function startCamera()
+	local ped = cache.ped
+	if cam or IsPedInAnyVehicle(ped, false) or IsEntityDead(ped) then return cam ~= nil end
+
+	savedHeading = GetEntityHeading(ped)
+	placeCamera('body')
+
+	-- keep the player still while the camera is on; give the camera back when the inventory closes
+	CreateThread(function()
+		while cam do
+			if not LocalPlayer.state.invOpen or IsEntityDead(cache.ped) or IsPedInAnyVehicle(cache.ped, false) then
+				stopCamera()
+				break
+			end
+
+			DisableControlAction(0, 30, true)
+			DisableControlAction(0, 31, true)
+			DisableControlAction(0, 21, true)
+			DisableControlAction(0, 22, true)
+			DisableControlAction(0, 24, true)
+			DisableControlAction(0, 25, true)
+			Wait(0)
+		end
+	end)
+
+	return true
+end
+
+RegisterNUICallback('clothingOpen', function(_, cb)
+	if not clothing() then return cb({ enabled = false }) end
+
+	lib.callback.await('ox_inventory:clothing:openWardrobe', false)
+	Utils.blurOut()
+	cb({ enabled = true, camera = startCamera(), equipment = equipment() })
+end)
+
+RegisterNUICallback('clothingClose', function(_, cb)
+	cb(1)
+	stopCamera()
+	lib.callback.await('ox_inventory:clothing:closeWardrobe', false)
+	TriggerEvent('ox_inventory:resetSecondary')
+	if client.screenblur and LocalPlayer.state.invOpen then Utils.blurIn() end
+end)
+
+RegisterNUICallback('clothingRotate', function(delta, cb)
+	cb(1)
+	local dx = tonumber(delta)
+	if cam and dx then SetEntityHeading(cache.ped, GetEntityHeading(cache.ped) + math.max(-45, math.min(45, dx * 0.4))) end
+end)
+
+RegisterNUICallback('clothingZoom', function(preset, cb)
+	cb(1)
+	if cam and ZOOM[preset] then placeCamera(preset) end
+end)
+
+RegisterNUICallback('clothingWear', function(slot, cb)
+	cb(1)
+	if wearGarment(slot, true) then sendEquipment() end
+end)
+
+RegisterNUICallback('clothingTakeOff', function(data, cb)
+	cb(1)
+	if type(data) == 'table' and config.items[data.item] and takeOff(data.item, tonumber(data.toSlot)) then sendEquipment() end
+end)
+
+AddEventHandler('onResourceStop', function(resource)
+	if resource == cache.resource then stopCamera() end
+end)

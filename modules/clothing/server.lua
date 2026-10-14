@@ -351,3 +351,26 @@ lib.callback.register('ox_inventory:clothing:takeOff', function(source, itemName
 
 	return true
 end)
+
+-- the Clothing tab opens the player's own wardrobe as the secondary inventory
+lib.callback.register('ox_inventory:clothing:openWardrobe', function(source)
+	local inv = getPlayer(source)
+	if not inv then return false end
+
+	return server.forceOpenInventory(source, 'stash', { id = WARDROBE, owner = inv.owner }) ~= nil
+end)
+
+lib.callback.register('ox_inventory:clothing:closeWardrobe', function(source)
+	local inv = Inventory(source) --[[@as OxInventory?]]
+	if not inv?.player or type(inv.open) ~= 'string' or not inv.open:find('^wardrobe:') then return false end
+
+	local wardrobe = Inventory(inv.open)
+
+	if wardrobe then
+		wardrobe.openedBy[inv.id] = nil
+		wardrobe:set('open', false)
+	end
+
+	inv.open = inv.id
+	return true
+end)

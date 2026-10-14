@@ -1799,6 +1799,14 @@ RegisterNUICallback('useButton', function(data, cb)
 	cb(1)
 end)
 
+-- back to "no secondary inventory" (the ground) after the clothing tab closed its wardrobe
+AddEventHandler('ox_inventory:resetSecondary', function()
+	if not invOpen then return end
+
+	currentInventory = defaultInventory
+	SendNUIMessage({ action = 'setupInventory', data = { rightInventory = currentInventory } })
+end)
+
 RegisterNUICallback('exit', function(_, cb)
 	client.closeInventory()
 	cb(1)
