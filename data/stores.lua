@@ -58,6 +58,21 @@ return {
 		end,
 	},
 
+	-- Taxes (vms_cityhall Config.Taxes rates). Prices are gross: the tax is part of the price.
+	-- Shops without an owner or job pay it to the City Hall budget at once; owned stores collect it
+	-- for a period and pay it from the till when the period ends (the till keeps it reserved).
+	taxes = {
+		enabled = true,
+		period = 'weekly', -- 'weekly' | 'biweekly' | 'monthly'
+		default = 'products.other',
+		categories = { food = 'products.food', ingredients = 'products.food', drinks = 'products.drinks' },
+		items = {
+			beer = 'products.alcohol', vodka = 'products.alcohol', whiskey = 'products.alcohol', wine = 'products.alcohol',
+			phone = 'products.electronics', radio = 'products.electronics', laptop = 'products.electronics', tablet = 'products.electronics',
+			jerrycan = 'products.fuel',
+		},
+	},
+
 	-- Discord logging: set the webhook on the server only, e.g.  set inventory:storeswebhook "https://discord.com/api/webhooks/..."
 	-- Purchases are logged from this amount up; withdrawals and admin changes are always logged.
 	logThreshold = 5000,
