@@ -5,10 +5,13 @@ local Inventory = require 'modules.inventory.server'
 local Utils = require 'modules.utils.server'
 
 local MAX_COMPONENT, MAX_PROP = 11, 7
+local RECENT_TTL = 60 -- seconds until tgiann-clothing has surely saved a change made here
 local cooldowns = {}
+local recent = {}
 
 AddEventHandler('playerDropped', function()
 	cooldowns[source] = nil
+	recent[source] = nil
 end)
 
 ---@return boolean
@@ -70,6 +73,61 @@ local function isNaked(parts, model)
 	return part.data.collection == '' and part.data.index == (naked[part.id] or 0)
 end
 
+---What the player wears, from the skin tgiann-clothing saved (the server's source of truth, so a
+---client cannot report garments it does not wear); nil when it cannot be read.
+---@return table?
+local function savedSkin(inv)
+	if GetResourceState('tgiann-clothing') ~= 'started' then return end
+
+	local resource = exports['tgiann-clothing']
+	local ok, hasSkin, _, skin = pcall(resource.GetSkinByIdentifier, resource, inv.owner)
+
+	if not ok or not hasSkin or not skin then return end
+	if type(skin) == 'string' then skin = json.decode(skin) end
+
+	return type(skin) == 'table' and skin or nil
+end
+
+---The worn data of one part: a change made here in the last minute (SaveSkin may not have reached
+---the database yet), else the saved skin. A prop missing from the skin is "nothing".
+local function wornData(source, skin, part)
+	local key = part.category .. part.id
+	local changes = recent[source]
+	local change = changes and changes[key]
+
+	if change and os.time() - change.at <= RECENT_TTL then return change.data end
+
+	local list = part.category == 'prop' and skin.props or skin.components
+	local entry = list and (list[tostring(part.id)] or list[part.id])
+
+	if not entry and part.category == 'prop' then return { collection = '', index = -1, texture = 0 } end
+
+	return entry
+end
+
+---@return boolean whether every reported part is what the player actually wears
+local function isWornAsReported(source, skin, parts)
+	for _, part in ipairs(parts) do
+		local data = wornData(source, skin, part)
+
+		if not data or (data.collection or '') ~= part.data.collection or tonumber(data.index) ~= part.data.index or tonumber(data.texture or 0) ~= part.data.texture then
+			return false
+		end
+	end
+
+	return true
+end
+
+---Records parts just changed here, until the saved skin catches up.
+local function remember(source, parts)
+	local changes = recent[source] or {}
+	recent[source] = changes
+
+	for _, part in ipairs(parts) do
+		changes[part.category .. part.id] = { data = part.data, at = os.time() }
+	end
+end
+
 ---@return table metadata in the tgiann-clothing format
 local function garmentMetadata(name, parts, model)
 	return { version = 'ox', data = parts, model = model, clotheType = name, type = 'clothe' }
@@ -103,6 +161,9 @@ lib.callback.register('ox_inventory:clothing:wear', function(source, slotId, wor
 		if not isValidPart(part) then return false, 'clothing_not_worn' end
 	end
 
+	local skin = savedSkin(inv)
+	if not skin then return false, 'clothing_unavailable' end
+
 	-- garments the client says it wears in the places the new one covers
 	local covered = {}
 	for _, part in ipairs(metadata.data) do covered[part.category .. part.id] = true end
@@ -122,6 +183,11 @@ lib.callback.register('ox_inventory:clothing:wear', function(source, slotId, wor
 		local replaced = {}
 		for _, part in ipairs(entry.parts) do
 			if covered[part.category .. part.id] then replaced[#replaced + 1] = part end
+		end
+
+		if not isWornAsReported(source, skin, replaced) then
+			Utils.LogExploit(source, 'clothing:wear', ('reported %s it does not wear'):format(entry.item))
+			return false
 		end
 
 		if #replaced > 0 and not isNaked(replaced, model) then
@@ -146,6 +212,8 @@ lib.callback.register('ox_inventory:clothing:wear', function(source, slotId, wor
 		end
 	end
 
+	remember(source, metadata.data)
+
 	return true, metadata.data
 end)
 
@@ -165,11 +233,30 @@ lib.callback.register('ox_inventory:clothing:takeOff', function(source, itemName
 	local model = GetEntityModel(GetPlayerPed(source))
 	if isNaked(parts, model) then return false, 'clothing_not_worn' end
 
+	local skin = savedSkin(inv)
+	if not skin then return false, 'clothing_unavailable' end
+
+	if not isWornAsReported(source, skin, parts) then
+		Utils.LogExploit(source, 'clothing:takeOff', ('reported %s it does not wear'):format(itemName))
+		return false, 'clothing_not_worn'
+	end
+
 	local metadata = garmentMetadata(itemName, parts, model)
 
 	if not Inventory.CanCarryItem(inv, itemName, 1, metadata) or not Inventory.AddItem(inv, itemName, 1, metadata) then
 		return false, 'cannot_carry'
 	end
+
+	-- the client puts "nothing" on these parts
+	local naked = config.naked[modelKey(model)] or {}
+	local stripped = {}
+
+	for i, part in ipairs(parts) do
+		local prop = part.category == 'prop'
+		stripped[i] = { category = part.category, id = part.id, data = { collection = '', index = prop and -1 or (naked[part.id] or 0), texture = 0 } }
+	end
+
+	remember(source, stripped)
 
 	return true
 end)

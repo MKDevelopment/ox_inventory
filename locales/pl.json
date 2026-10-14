@@ -274,5 +274,6 @@
   "ui_doc_licenses": "Uprawnienia",
   "ui_doc_grade": "Stopień",
   "ui_doc_badge": "Nr odznaki",
-  "ui_doc_serial": "Nr seryjny"
+  "ui_doc_serial": "Nr seryjny",
+  "clothing_unavailable": "Nie udało się odczytać wyglądu postaci, spróbuj za chwilę"
 }

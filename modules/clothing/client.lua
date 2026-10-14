@@ -33,13 +33,33 @@ local function readPart(ped, category, id)
 	return { category = category, id = id, data = { collection = collection, index = index, texture = math.max(texture, 0) } }
 end
 
+---A part as tgiann-clothing currently has it (the same data it saves, which the server checks against).
+---@return table?
+local function skinPart(skin, category, id)
+	local list = skin and (category == 'prop' and skin.props or skin.components)
+	local entry = list and (list[tostring(id)] or list[id])
+
+	if type(entry) ~= 'table' then return end
+
+	return {
+		category = category,
+		id = id,
+		data = { collection = entry.collection or '', index = math.tointeger(tonumber(entry.index)) or 0, texture = math.tointeger(tonumber(entry.texture)) or 0 },
+	}
+end
+
 ---@param def table data/clothing.lua item entry
 ---@return table[]
 local function readGarment(ped, def)
 	local parts = {}
+	local resource = clothing()
+	local ok, skin = false, nil
 
-	for _, id in ipairs(def.components or {}) do parts[#parts + 1] = readPart(ped, 'component', id) end
-	for _, id in ipairs(def.props or {}) do parts[#parts + 1] = readPart(ped, 'prop', id) end
+	if resource then ok, skin = pcall(resource.GetPedSkinData, resource, ped) end
+	if not ok or type(skin) ~= 'table' then skin = nil end
+
+	for _, id in ipairs(def.components or {}) do parts[#parts + 1] = skinPart(skin, 'component', id) or readPart(ped, 'component', id) end
+	for _, id in ipairs(def.props or {}) do parts[#parts + 1] = skinPart(skin, 'prop', id) or readPart(ped, 'prop', id) end
 
 	return parts
 end

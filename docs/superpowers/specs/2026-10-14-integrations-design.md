@@ -89,6 +89,11 @@ Item format (unchanged, as tgiann-clothing writes it):
   parts from the ped (drawable, texture and collection natives) into a `c_*` item and puts on
   "nothing", then `SaveSkin`. The server creates the item only from a validated part list and only
   for a category the player is actually wearing.
+- Source of truth for what a player wears: the skin tgiann-clothing saved (`GetSkinByIdentifier`,
+  `components[id]` / `props[id]` = `{ collection, index, texture }`), overlaid for 60 seconds with
+  changes made by ox_inventory (until `SaveSkin` reaches the database). Take-off and the garments a
+  wear returns must match it; without a readable skin both are refused. The client reads parts with
+  `GetPedSkinData` (same format), falling back to game natives.
 - Removed: `clothing_*` items and the old `modules/clothing` logic built on them.
 
 - Wearing moves the garment onto the body: the server removes the used item and gives back what

@@ -274,5 +274,6 @@
   "ui_doc_licenses": "Licences",
   "ui_doc_grade": "Grade",
   "ui_doc_badge": "Badge number",
-  "ui_doc_serial": "Serial number"
+  "ui_doc_serial": "Serial number",
+  "clothing_unavailable": "Your appearance could not be read, try again in a moment"
 }
