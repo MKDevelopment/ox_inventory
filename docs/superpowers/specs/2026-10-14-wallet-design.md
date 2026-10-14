@@ -51,6 +51,19 @@ trunk, drop, another container or another player does not count for this player.
   and that the player can carry the withdrawn cash.
 - Logged with the existing inventory logging (`lib.logger`) like other money moves.
 
+## Cards in the wallet
+
+- **Lookups see wallet contents.** `data/wallet.lua` lists `searchable` items, by default the
+  tgg-banking cards `debitcard_personal`, `debitcard_shared` and `debitcard_business`. For those
+  names on player inventories, the server lookups `GetItemCount`, `GetItem` (count),
+  `Search` ('count' and 'slots'), `GetSlotWithItem` and `GetSlotsWithItem` also return matching
+  items inside the player's wallets, after the pocket ones. A script checking for a card
+  (e.g. at an ATM) finds a card kept in the wallet. Slots returned from a wallet carry
+  `wallet = <wallet slot>` so callers can tell them apart. The wallet container is loaded on demand.
+- **Use from the wallet.** Using an item inside an open wallet (context menu "Use", or alt+click)
+  moves it to the pocket and uses it there through the normal `useSlot` flow, so item exports
+  such as `tgg-banking.UseCardOnAtm` work unchanged.
+
 ## Theft protection
 
 `data/wallet.lua` holds the wallet settings:
@@ -58,6 +71,8 @@ trunk, drop, another container or another player does not count for this player.
 ```lua
 return {
     slots = 10,
+    -- items that inventory lookups also find inside the player's wallets
+    searchable = { 'debitcard_personal', 'debitcard_shared', 'debitcard_business' },
     -- who may take a wallet out of another player's inventory (robbing, /steal, searching):
     -- false = nobody, 'police' = only jobs in inventory:police (rcore_police searches), true = anyone
     steal = 'police',
