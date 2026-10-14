@@ -238,5 +238,15 @@
   "ui_category_drugs": "Drugs",
   "ui_category_vehicle": "Vehicle",
   "ui_category_valuables": "Valuables",
-  "ui_category_materials": "Materials"
+  "ui_category_materials": "Materials",
+  "wallet_cannot_steal": "You cannot take this wallet",
+  "wallet_invalid_amount": "Enter a whole amount above zero",
+  "wallet_not_enough": "Not enough cash",
+  "wallet_cannot_carry": "You cannot carry that much cash",
+  "wallet_pocket_full": "Your pockets are full",
+  "meta_cash": "Cash ($)",
+  "ui_wallet_cash": "Cash in wallet",
+  "ui_wallet_deposit": "Put in",
+  "ui_wallet_withdraw": "Take out",
+  "ui_wallet_amount": "Amount"
 }

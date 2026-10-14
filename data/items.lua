@@ -8316,7 +8316,7 @@ return {
 		close = true,
 	},
 
-	-- Documents and cards (33)
+	-- Documents and cards (34)
 	['bank_card'] = {
 		label = 'Bank Card',
 		description = 'Used to access ATM',
@@ -8642,6 +8642,15 @@ return {
 		client = {
 			image = 'vehicle_sale_agreement.png',
 		},
+	},
+
+	['wallet'] = {
+		label = 'Wallet',
+		description = 'Keeps your cash, payment cards and documents together.',
+		category = 'documents',
+		weight = 100,
+		stack = false,
+		close = false,
 	},
 
 	['weaponlicense'] = {

@@ -65,4 +65,22 @@ setContainerProperties('cooler', {
 	maxWeight = 8000,
 })
 
+-- wallet: cards and documents; cash is stored on the wallet itself (see modules/wallet)
+do
+	local settings = lib.load('data.wallet') or {}
+	local whitelist = {}
+
+	for name, item in pairs(lib.load('data.items') or {}) do
+		if item.category == 'documents' and name ~= 'wallet' then
+			whitelist[#whitelist + 1] = name
+		end
+	end
+
+	setContainerProperties('wallet', {
+		slots = settings.slots or 10,
+		maxWeight = settings.maxWeight or 500,
+		whitelist = whitelist,
+	})
+end
+
 return containers
