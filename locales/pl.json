@@ -229,5 +229,8 @@
   "store_log_update": "Edycja sklepu",
   "store_log_update_text": "%s zmienił(a) sklep #%s %s (typ %s, praca %s %s+, właściciel %s)",
   "store_log_delete": "Usunięcie sklepu",
-  "store_log_delete_text": "%s usunął/usunęła sklep #%s %s (w kasie $%s)"
+  "store_log_delete_text": "%s usunął/usunęła sklep #%s %s (w kasie $%s)",
+  "ui_ground": "Ziemia",
+  "ui_glovebox": "Schowek",
+  "ui_trunk": "Bagażnik"
 }

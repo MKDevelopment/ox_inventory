@@ -229,5 +229,8 @@
   "store_log_update": "Store updated",
   "store_log_update_text": "%s updated store #%s %s (type %s, job %s %s+, owner %s)",
   "store_log_delete": "Store deleted",
-  "store_log_delete_text": "%s deleted store #%s %s ($%s in the till)"
+  "store_log_delete_text": "%s deleted store #%s %s ($%s in the till)",
+  "ui_ground": "Ground",
+  "ui_glovebox": "Glovebox",
+  "ui_trunk": "Trunk"
 }

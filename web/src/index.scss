@@ -1834,3 +1834,22 @@ body.inv-dragging {
   color: $sunsetColor;
   text-align: right;
 }
+
+.other-panel-title h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+// licence plate badge for trunks and gloveboxes
+.other-panel-title .plate {
+  padding: 2px 8px;
+  border: 2px solid #c9cdd6;
+  border-radius: 5px;
+  background: #f4f5f8;
+  color: #1d2a6b;
+  font-family: $headingFont;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}

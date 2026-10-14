@@ -11,6 +11,9 @@ import { SearchIcon } from '../mystory/icons';
 
 const PAGE_SIZE = 30;
 
+// vehicle inventories are labelled with the plate; show what they are and the plate as a badge
+const VEHICLE_TYPES: Record<string, string> = { glovebox: 'ui_glovebox', trunk: 'ui_trunk' };
+
 const InventoryGrid: React.FC<{ inventory: Inventory }> = ({ inventory }) => {
   const weight = useMemo(
     () => (inventory.maxWeight !== undefined ? Math.floor(getTotalWeight(inventory.items) * 1000) / 1000 : 0),
@@ -42,7 +45,17 @@ const InventoryGrid: React.FC<{ inventory: Inventory }> = ({ inventory }) => {
     <section className="other-panel" style={{ pointerEvents: isBusy ? 'none' : 'auto' }}>
       <header className="other-panel-header">
         <div className="other-panel-title">
-          <h2>{inventory.label}</h2>
+          {VEHICLE_TYPES[inventory.type] ? (
+            <h2>
+              {Locale[VEHICLE_TYPES[inventory.type]] || inventory.type}
+              {inventory.label && <span className="plate">{inventory.label}</span>}
+            </h2>
+          ) : (
+            <h2>
+              {inventory.label ||
+                (inventory.type === 'newdrop' || inventory.type === 'drop' ? Locale.ui_ground || 'Ground' : '')}
+            </h2>
+          )}
           {inventory.maxWeight ? (
             <span>
               {(weight / 1000).toLocaleString('en-us', { maximumFractionDigits: 1 })} / {inventory.maxWeight / 1000} kg
