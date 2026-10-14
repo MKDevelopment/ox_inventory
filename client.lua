@@ -1363,7 +1363,8 @@ RegisterNetEvent('ox_inventory:setPlayerInventory', function(currentDrops, inven
 				maxWeight = shared.playerweight,
 			},
 			imagepath = client.imagepath,
-			imageformat = client.imageformat
+			imageformat = client.imageformat,
+			clothing = GetResourceState('tgiann-clothing') == 'started'
 		}
 	})
 

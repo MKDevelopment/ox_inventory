@@ -2026,3 +2026,163 @@ body.inv-dragging {
     text-align: right;
   }
 }
+
+// clothing tab
+.inventory-wrapper.clothing-open {
+  background: linear-gradient(90deg, rgba(5, 4, 10, 0.75) 0%, rgba(5, 4, 10, 0.35) 45%, transparent 70%);
+}
+
+.clothing-view {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.clothing-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .section-title {
+    display: flex;
+    justify-content: space-between;
+  }
+}
+
+.clothing-count {
+  color: $textColor;
+}
+
+.equipment-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: $gridGap;
+}
+
+.equipment-slot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  aspect-ratio: 1 / 1.15;
+  padding: 4px;
+  border: 1px dashed rgba(179, 168, 255, 0.25);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  transition:
+    border-color 120ms,
+    background 120ms;
+
+  .equipment-image {
+    flex: 1;
+    width: 100%;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: grayscale(100%);
+    opacity: 0.25;
+  }
+
+  .equipment-label {
+    max-width: 100%;
+    overflow: hidden;
+    font-size: 10px;
+    color: $mutedTextColor;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &.worn {
+    border-style: solid;
+    border-color: rgba(124, 92, 255, 0.35);
+    background: $accentColorSoft;
+    cursor: grab;
+
+    .equipment-image {
+      filter: none;
+      opacity: 1;
+    }
+
+    .equipment-label {
+      color: $textColor;
+    }
+  }
+
+  &.accepts {
+    border-color: rgba(139, 109, 255, 0.6);
+  }
+
+  &.over {
+    border-color: $accentColorLight;
+    background: rgba(109, 74, 255, 0.28);
+  }
+}
+
+.wardrobe-grid {
+  display: grid;
+  grid-template-columns: repeat($gridCols, $gridSize);
+  grid-auto-rows: $gridSize;
+  gap: $gridGap;
+  max-height: calc(4 * #{$gridSize} + 3 * #{$gridGap});
+  overflow-y: auto;
+}
+
+.wardrobe-slot {
+  display: flex;
+
+  .inventory-slot {
+    flex: 1;
+  }
+
+  &.over .inventory-slot {
+    border: 1px dashed $accentColorLight;
+  }
+}
+
+.clothing-stage {
+  position: relative;
+  flex: 1;
+  min-width: 40vw;
+
+  &.has-camera {
+    cursor: ew-resize;
+  }
+}
+
+.clothing-controls {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transform: translateX(-50%);
+  cursor: default;
+}
+
+.clothing-hint {
+  font-size: 12px;
+  color: $mutedTextColor;
+}
+
+.clothing-zoom {
+  display: flex;
+  gap: 6px;
+
+  button {
+    padding: 6px 14px;
+    border: 1px solid rgba(124, 92, 255, 0.35);
+    border-radius: 999px;
+    background: rgba(19, 16, 29, 0.85);
+    color: $textColor;
+    font-family: $mainFont;
+    font-size: 12px;
+    cursor: pointer;
+
+    &:hover {
+      background: $accentColorSoft;
+    }
+  }
+}

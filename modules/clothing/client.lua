@@ -107,8 +107,7 @@ local function applyParts(resource, ped, parts)
 	end
 end
 
----Item export of c_* and clothe_set (client.export = 'ox_inventory.useClothing'): puts the garment on;
----whatever it replaces comes back as an item.
+---Puts a garment on; whatever it replaces comes back as an item.
 ---@param slot table garment slot data (pocket or wardrobe)
 ---@param fromWardrobe? boolean
 ---@return boolean
@@ -151,10 +150,6 @@ local function wearGarment(slot, fromWardrobe)
 	resource:SaveSkin()
 	return true
 end
-
-exports('useClothing', function(_, slot)
-	wearGarment(slot)
-end)
 
 ---@param name string garment item
 ---@param toSlot? integer wardrobe slot to take it off into
@@ -240,6 +235,11 @@ end
 local function sendEquipment()
 	SendNUIMessage({ action = 'clothingEquipment', data = equipment() })
 end
+
+---Item export of c_* and clothe_set (client.export = 'ox_inventory.useClothing').
+exports('useClothing', function(_, slot)
+	if wearGarment(slot) and LocalPlayer.state.invOpen then sendEquipment() end
+end)
 
 ---Camera in front of the player, aimed past them so the ped stands on the right half of the screen.
 local function placeCamera(preset)
@@ -329,9 +329,9 @@ RegisterNUICallback('clothingZoom', function(preset, cb)
 	if cam and ZOOM[preset] then placeCamera(preset) end
 end)
 
-RegisterNUICallback('clothingWear', function(slot, cb)
+RegisterNUICallback('clothingWear', function(data, cb)
 	cb(1)
-	if wearGarment(slot, true) then sendEquipment() end
+	if type(data) == 'table' and wearGarment(data.item, data.fromWardrobe == true) then sendEquipment() end
 end)
 
 RegisterNUICallback('clothingTakeOff', function(data, cb)

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import logo from '../../assets/logo.webp';
-import { useAppSelector } from '../../store';
+import { useAppDispatch, useAppSelector } from '../../store';
+import { closeClothing, openClothing } from '../../store/clothing';
 import { selectLeftInventory } from '../../store/inventory';
 import { Items } from '../../store/items';
 import { Locale } from '../../store/locale';
@@ -11,6 +12,7 @@ import InventorySlot from '../inventory/InventorySlot';
 import WeightArc from './WeightArc';
 import SortMenu from './SortMenu';
 import { CategoryIcon, SearchIcon } from './icons';
+import ClothingView from './ClothingView';
 
 const QUICK_SLOTS = 5;
 
@@ -24,6 +26,16 @@ const PlayerPanel: React.FC = () => {
   const isBusy = useAppSelector((state) => state.inventory.isBusy);
   const [folder, setFolder] = useState<Folder>('all');
   const [search, setSearch] = useState('');
+  const dispatch = useAppDispatch();
+  const clothingEnabled = useAppSelector((state) => state.clothing.enabled);
+  const clothingTab = folder === 'clothing' && clothingEnabled;
+
+  const selectFolder = (key: Folder) => {
+    if (key === folder) return;
+    if (clothingTab) closeClothing(dispatch);
+    setFolder(key);
+    if (key === 'clothing' && clothingEnabled) openClothing(dispatch);
+  };
 
   const weight = useMemo(() => getTotalWeight(inventory.items), [inventory.items]);
   const quickSlots = useMemo(() => inventory.items.slice(0, QUICK_SLOTS), [inventory.items]);
@@ -82,16 +94,16 @@ const PlayerPanel: React.FC = () => {
       <div className="player-panel-body">
         <nav className="folder-rail">
           {(['all', ...CATEGORIES] as Folder[])
-            .filter((key) => key === 'all' || key === folder || folders[key])
+            .filter((key) => key === 'all' || key === folder || folders[key] || (key === 'clothing' && clothingEnabled))
             .map((key) => {
               const stats = folders[key];
-              const empty = key !== 'all' && !stats;
+              const empty = key !== 'all' && !stats && !(key === 'clothing' && clothingEnabled);
 
               return (
                 <button
                   key={key}
                   className={`folder${folder === key ? ' active' : ''}${empty ? ' empty' : ''}`}
-                  onClick={() => setFolder(key)}
+                  onClick={() => selectFolder(key)}
                   title={getCategoryLabel(key)}
                 >
                   <CategoryIcon category={key} />
@@ -118,47 +130,55 @@ const PlayerPanel: React.FC = () => {
             </div>
           </div>
 
-          <div className="pocket-toolbar">
-            <div className="pocket-title">
-              <h2>{getCategoryLabel(folder)}</h2>
-              {folders[folder] && (
-                <span>{(folders[folder].weight / 1000).toLocaleString('en-us', { maximumFractionDigits: 2 })} kg</span>
-              )}
-            </div>
-            <label className="search-field">
-              <SearchIcon />
-              <input
-                type="text"
-                value={search}
-                placeholder={Locale.ui_search || 'Search...'}
-                onChange={(event) => setSearch(event.target.value)}
-              />
-            </label>
-            <SortMenu />
-          </div>
-
-          <div className="pocket-grid">
-            {visibleSlots.map((item) => {
-              const slot = (
-                <InventorySlot
-                  key={`player-${item.slot}`}
-                  item={item}
-                  inventoryType={inventory.type}
-                  inventoryGroups={inventory.groups}
-                  inventoryId={inventory.id}
-                />
-              );
-
-              return filtered && !item.name ? (
-                <div className="free-slot" key={`player-free-${item.slot}`} title={Locale.ui_free_slot}>
-                  {slot}
+          {clothingTab ? (
+            <ClothingView />
+          ) : (
+            <>
+              <div className="pocket-toolbar">
+                <div className="pocket-title">
+                  <h2>{getCategoryLabel(folder)}</h2>
+                  {folders[folder] && (
+                    <span>
+                      {(folders[folder].weight / 1000).toLocaleString('en-us', { maximumFractionDigits: 2 })} kg
+                    </span>
+                  )}
                 </div>
-              ) : (
-                slot
-              );
-            })}
-            {!hasMatches && <p className="pocket-empty">{Locale.ui_folder_empty || 'Nothing here yet.'}</p>}
-          </div>
+                <label className="search-field">
+                  <SearchIcon />
+                  <input
+                    type="text"
+                    value={search}
+                    placeholder={Locale.ui_search || 'Search...'}
+                    onChange={(event) => setSearch(event.target.value)}
+                  />
+                </label>
+                <SortMenu />
+              </div>
+
+              <div className="pocket-grid">
+                {visibleSlots.map((item) => {
+                  const slot = (
+                    <InventorySlot
+                      key={`player-${item.slot}`}
+                      item={item}
+                      inventoryType={inventory.type}
+                      inventoryGroups={inventory.groups}
+                      inventoryId={inventory.id}
+                    />
+                  );
+
+                  return filtered && !item.name ? (
+                    <div className="free-slot" key={`player-free-${item.slot}`} title={Locale.ui_free_slot}>
+                      {slot}
+                    </div>
+                  ) : (
+                    slot
+                  );
+                })}
+                {!hasMatches && <p className="pocket-empty">{Locale.ui_folder_empty || 'Nothing here yet.'}</p>}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </section>

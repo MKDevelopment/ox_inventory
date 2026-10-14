@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import useNuiEvent from '../../hooks/useNuiEvent';
 import InventoryControl from './InventoryControl';
 import InventoryHotbar from './InventoryHotbar';
-import { useAppDispatch } from '../../store';
+import { useAppDispatch, useAppSelector } from '../../store';
+import { clothingClosed, setEquipment } from '../../store/clothing';
+import { ClothingStage } from '../mystory/ClothingView';
 import { refreshSlots, setAdditionalMetadata, setupInventory } from '../../store/inventory';
 import { useExitListener } from '../../hooks/useExitListener';
 import type { Inventory as InventoryProps } from '../../typings';
@@ -18,14 +20,20 @@ import Fade from '../utils/transitions/Fade';
 const Inventory: React.FC = () => {
   const [inventoryVisible, setInventoryVisible] = useState(false);
   const dispatch = useAppDispatch();
+  const clothingOpen = useAppSelector((state) => state.clothing.open);
 
   useNuiEvent<boolean>('setInventoryVisible', setInventoryVisible);
   useNuiEvent<false>('closeInventory', () => {
     setInventoryVisible(false);
+    dispatch(clothingClosed());
     dispatch(closeContextMenu());
     dispatch(closeTooltip());
   });
   useExitListener(setInventoryVisible);
+
+  useEffect(() => {
+    if (!inventoryVisible) dispatch(clothingClosed());
+  }, [inventoryVisible]);
 
   useNuiEvent<{
     leftInventory?: InventoryProps;
@@ -34,6 +42,8 @@ const Inventory: React.FC = () => {
     dispatch(setupInventory(data));
     !inventoryVisible && setInventoryVisible(true);
   });
+
+  useNuiEvent('clothingEquipment', (data) => dispatch(setEquipment(data)));
 
   useNuiEvent('refreshSlots', (data) => dispatch(refreshSlots(data)));
 
@@ -44,11 +54,11 @@ const Inventory: React.FC = () => {
   return (
     <>
       <Fade in={inventoryVisible}>
-        <div className="inventory-wrapper">
+        <div className={`inventory-wrapper${clothingOpen ? ' clothing-open' : ''}`}>
           <div className="inventory-layout">
             <div className="inventory-columns">
               <LeftInventory />
-              <RightInventory />
+              {clothingOpen ? <ClothingStage /> : <RightInventory />}
             </div>
             <InventoryControl />
           </div>
