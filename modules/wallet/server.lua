@@ -110,6 +110,71 @@ end
 lib.callback.register('ox_inventory:walletDeposit', deposit)
 lib.callback.register('ox_inventory:walletWithdraw', withdraw)
 
+---Searchable items (bank cards) in the player's wallets, by name, for client-side lookups.
+---@param source number
+---@return table<string, table[]>
+local function getWalletItems(source)
+	local inv = Inventory(source) --[[@as OxInventory?]]
+	local items = {}
+
+	if not inv then return items end
+
+	for _, name in ipairs(WalletCash.settings().searchable or {}) do
+		local found = Inventory.GetWalletItems(inv, name)
+
+		if #found > 0 then items[name] = found end
+	end
+
+	return items
+end
+
+local pending = {}
+
+---Sends the player's wallet cards to their client (batched to one push per tick).
+---@param source number
+local function pushWalletItems(source)
+	if pending[source] then return end
+
+	pending[source] = true
+
+	SetTimeout(0, function()
+		pending[source] = nil
+		TriggerClientEvent('ox_inventory:walletItems', source, getWalletItems(source))
+	end)
+end
+
+lib.callback.register('ox_inventory:getWalletItems', getWalletItems)
+
+---Moves an item out of the open wallet into the pocket so it can be used.
+---@return integer? pocket slot
+lib.callback.register('ox_inventory:walletTakeOut', function(source, containerSlot)
+	local inv = Inventory(source) --[[@as OxInventory?]]
+	local wallet = inv and inv.containerSlot and inv.items[inv.containerSlot]
+
+	if not wallet or wallet.name ~= 'wallet' or inv.open ~= wallet.metadata.container then return end
+
+	local container = Inventory(wallet.metadata.container) --[[@as OxInventory?]]
+	local item = container and container.items[tonumber(containerSlot)]
+
+	if not item then return end
+
+	local slot = Inventory.GetEmptySlot(inv)
+
+	if not slot or not Inventory.CanCarryItem(inv, item.name, item.count, item.metadata) then
+		notify(source, 'wallet_pocket_full')
+		return
+	end
+
+	local name, count, metadata = item.name, item.count, item.metadata
+
+	if not Inventory.RemoveItem(container, name, count, metadata, item.slot) then return end
+
+	Inventory.AddItem(inv, name, count, metadata, slot)
+	pushWalletItems(source)
+
+	return slot
+end)
+
 -- dragging cash onto a wallet puts it inside
 exports.ox_inventory:registerHook('swapItems', function(payload)
 	local toSlot = payload.toSlot
@@ -123,6 +188,17 @@ exports.ox_inventory:registerHook('swapItems', function(payload)
 
 	return false
 end, { itemFilter = { money = true } })
+
+-- keep the client's copy of wallet cards current when wallets or their contents move
+exports.ox_inventory:registerHook('swapItems', function(payload)
+	local moved = type(payload.fromSlot) == 'table' and payload.fromSlot.name
+
+	if payload.fromType == 'container' or payload.toType == 'container' or moved == 'wallet' then
+		for _, id in ipairs({ payload.source, payload.fromInventory, payload.toInventory }) do
+			if type(id) == 'number' then pushWalletItems(id) end
+		end
+	end
+end)
 
 -- taking a wallet out of someone else's inventory (robbing, /steal, searching)
 exports.ox_inventory:registerHook('swapItems', function(payload)

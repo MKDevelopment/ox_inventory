@@ -3,7 +3,7 @@ import { useDrop } from 'react-dnd';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { selectItemAmount, setItemAmount } from '../../store/inventory';
 import { DragSource } from '../../typings';
-import { onUse } from '../../dnd/onUse';
+import { onUse, onUseInContainer } from '../../dnd/onUse';
 import { onGive } from '../../dnd/onGive';
 import { fetchNui } from '../../utils/fetchNui';
 import { Locale } from '../../store/locale';
@@ -27,7 +27,8 @@ const InventoryControl: React.FC = () => {
   const [, use] = useDrop<DragSource, void, any>(() => ({
     accept: 'SLOT',
     drop: (source) => {
-      source.inventory === 'player' && onUse(source.item);
+      if (source.inventory === 'player') onUse(source.item);
+      else if (source.inventory === 'container') onUseInContainer(source.item);
     },
   }));
 

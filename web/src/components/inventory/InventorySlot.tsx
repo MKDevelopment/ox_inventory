@@ -7,7 +7,7 @@ import { onDrop } from '../../dnd/onDrop';
 import { onBuy } from '../../dnd/onBuy';
 import { Items } from '../../store/items';
 import { canCraftItem, canPurchaseItem, getItemUrl, isSlotWithItem } from '../../helpers';
-import { onUse } from '../../dnd/onUse';
+import { onUse, onUseInContainer } from '../../dnd/onUse';
 import { Locale } from '../../store/locale';
 import { onCraft } from '../../dnd/onCraft';
 import useNuiEvent from '../../hooks/useNuiEvent';
@@ -120,6 +120,8 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
       onDrop({ item: item, inventory: inventoryType });
     } else if (event.altKey && isSlotWithItem(item) && inventoryType === 'player') {
       onUse(item);
+    } else if (event.altKey && isSlotWithItem(item) && inventoryType === 'container') {
+      onUseInContainer(item);
     }
   };
 
