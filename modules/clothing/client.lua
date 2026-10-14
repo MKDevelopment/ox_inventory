@@ -286,6 +286,7 @@ local function startCamera()
 		while cam do
 			if not LocalPlayer.state.invOpen or IsEntityDead(cache.ped) or IsPedInAnyVehicle(cache.ped, false) then
 				stopCamera()
+				SendNUIMessage({ action = 'clothingCamera', data = false })
 				break
 			end
 
@@ -295,6 +296,8 @@ local function startCamera()
 			DisableControlAction(0, 22, true)
 			DisableControlAction(0, 24, true)
 			DisableControlAction(0, 25, true)
+			DisableControlAction(0, 23, true)
+			DisableControlAction(0, 75, true)
 			Wait(0)
 		end
 	end)
@@ -302,19 +305,33 @@ local function startCamera()
 	return true
 end
 
+-- bumped by every open and close, so an open that finishes after a close does nothing
+local session = 0
+
 RegisterNUICallback('clothingOpen', function(_, cb)
 	if not clothing() then return cb({ enabled = false }) end
 
-	lib.callback.await('ox_inventory:clothing:openWardrobe', false)
+	session += 1
+	local current = session
+
+	local opened = lib.callback.await('ox_inventory:clothing:openWardrobe', false)
+	if current ~= session or not LocalPlayer.state.invOpen then return cb({ enabled = true, cancelled = true }) end
+
+	-- the wardrobe opening blurs the screen again
+	Wait(0)
 	Utils.blurOut()
-	cb({ enabled = true, camera = startCamera(), equipment = equipment() })
+	cb({ enabled = true, wardrobe = opened, camera = startCamera(), equipment = equipment() })
 end)
 
 RegisterNUICallback('clothingClose', function(_, cb)
 	cb(1)
+	session += 1
 	stopCamera()
-	lib.callback.await('ox_inventory:clothing:closeWardrobe', false)
-	TriggerEvent('ox_inventory:resetSecondary')
+
+	if lib.callback.await('ox_inventory:clothing:closeWardrobe', false) then
+		TriggerEvent('ox_inventory:resetSecondary')
+	end
+
 	if client.screenblur and LocalPlayer.state.invOpen then Utils.blurIn() end
 end)
 

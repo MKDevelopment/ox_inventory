@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import logo from '../../assets/logo.webp';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { closeClothing, openClothing } from '../../store/clothing';
@@ -28,7 +28,15 @@ const PlayerPanel: React.FC = () => {
   const [search, setSearch] = useState('');
   const dispatch = useAppDispatch();
   const clothingEnabled = useAppSelector((state) => state.clothing.enabled);
+  const clothingOpen = useAppSelector((state) => state.clothing.open);
   const clothingTab = folder === 'clothing' && clothingEnabled;
+  const wasOpen = useRef(false);
+
+  // the tab was closed from outside (another inventory opened): back to all items
+  useEffect(() => {
+    if (wasOpen.current && !clothingOpen && folder === 'clothing') setFolder('all');
+    wasOpen.current = clothingOpen;
+  }, [clothingOpen]);
 
   const selectFolder = (key: Folder) => {
     if (key === folder) return;

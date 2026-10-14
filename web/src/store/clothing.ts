@@ -51,18 +51,27 @@ export const clothingSlice = createSlice({
       state.open = false;
       state.camera = false;
     },
+    setCamera(state, action: PayloadAction<boolean>) {
+      state.camera = action.payload;
+    },
     setEquipment(state, action: PayloadAction<unknown>) {
       state.equipment = normalise(action.payload);
     },
   },
 });
 
-export const { setClothingEnabled, clothingOpened, clothingClosed, setEquipment } = clothingSlice.actions;
+export const { setClothingEnabled, clothingOpened, clothingClosed, setCamera, setEquipment } = clothingSlice.actions;
+
+// every open and close bumps it, so a late open response after a close is ignored
+let session = 0;
 
 export const openClothing = async (dispatch: AppDispatch) => {
-  const response = await fetchNui<{ enabled: boolean; camera?: boolean; equipment?: unknown } | undefined>(
-    'clothingOpen'
-  );
+  const current = ++session;
+  const response = await fetchNui<
+    { enabled: boolean; cancelled?: boolean; camera?: boolean; equipment?: unknown } | undefined
+  >('clothingOpen');
+
+  if (current !== session || response?.cancelled) return false;
 
   if (response && !response.enabled) {
     dispatch(setClothingEnabled(false));
@@ -74,6 +83,7 @@ export const openClothing = async (dispatch: AppDispatch) => {
 };
 
 export const closeClothing = (dispatch: AppDispatch) => {
+  session++;
   dispatch(clothingClosed());
   fetchNui('clothingClose');
 };

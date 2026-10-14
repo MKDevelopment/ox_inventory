@@ -139,9 +139,46 @@ local function isGarment(name)
 	return config.items[name] ~= nil or name == config.set
 end
 
+local loading = {}
+
+---@return OxInventory?
+local function loadedWardrobe(owner)
+	return Inventory(('%s:%s'):format(WARDROBE, owner)) or nil
+end
+
+---Loads a wardrobe once: callers arriving while it loads wait for the same load instead of creating
+---a second inventory that would replace the first.
 ---@return OxInventory?
 local function getWardrobe(inv)
-	return inv?.owner and Inventory({ id = WARDROBE, owner = inv.owner }) or nil
+	local owner = inv?.owner
+	if not owner then return end
+
+	local wardrobe = loadedWardrobe(owner)
+	if wardrobe then return wardrobe end
+
+	if loading[owner] then return Citizen.Await(loading[owner]) end
+
+	local pending = promise.new()
+	loading[owner] = pending
+
+	local ok, result = pcall(Inventory, { id = WARDROBE, owner = owner })
+	wardrobe = ok and result or nil
+
+	loading[owner] = nil
+	pending:resolve(wardrobe)
+
+	return wardrobe
+end
+
+---@return integer
+local function freeSlots(wardrobe)
+	local free = 0
+
+	for i = 1, wardrobe.slots or wardrobeSlots do
+		if not wardrobe.items[i] then free += 1 end
+	end
+
+	return free
 end
 
 ---Where a garment given to `inv` goes: its wardrobe when that has room, else the inventory itself.
@@ -150,36 +187,33 @@ local function garmentTarget(inv)
 	return wardrobe and Inventory.GetEmptySlot(wardrobe) and wardrobe or inv
 end
 
-local warming = {}
-
--- garments added to a player by any resource (e.g. tgiann-clothing shops) land in the wardrobe;
--- AddItem must not wait on the database, so an unloaded wardrobe is loaded in the background
-function Inventory.redirectAdd(inv, item)
+-- garments added to a player by any resource (e.g. tgiann-clothing shops) land in the wardrobe when
+-- all of them fit (garments do not stack); AddItem must not wait on the database, so an unloaded
+-- wardrobe is loaded in the background
+function Inventory.redirectAdd(inv, item, count)
 	if not inv.player or not inv.owner or not isGarment(item.name) then return end
 
-	local wardrobe = Inventory(('%s:%s'):format(WARDROBE, inv.owner))
+	local wardrobe = loadedWardrobe(inv.owner)
 
 	if not wardrobe then
-		if not warming[inv.owner] then
-			local owner = inv.owner
-			warming[owner] = true
-			CreateThread(function()
-				getWardrobe(inv)
-				warming[owner] = nil
-			end)
-		end
-
+		if not loading[inv.owner] then CreateThread(function() getWardrobe(inv) end) end
 		return
 	end
 
-	if Inventory.GetEmptySlot(wardrobe) then return wardrobe end
+	if freeSlots(wardrobe) >= (tonumber(count) or 1) then return wardrobe end
 end
 
--- only garments go into a wardrobe
-exports.ox_inventory:registerHook('swapItems', function(payload)
-	local to = payload.toInventory
+local function isWardrobeId(id)
+	return type(id) == 'string' and id:find('^wardrobe:') ~= nil
+end
 
-	if type(to) == 'string' and to:find('^wardrobe:') and type(payload.fromSlot) == 'table' and not isGarment(payload.fromSlot.name) then
+-- only garments go into a wardrobe, including what a swap sends back from the other inventory
+exports.ox_inventory:registerHook('swapItems', function(payload)
+	if isWardrobeId(payload.toInventory) and type(payload.fromSlot) == 'table' and not isGarment(payload.fromSlot.name) then
+		return false
+	end
+
+	if isWardrobeId(payload.fromInventory) and type(payload.toSlot) == 'table' and not isGarment(payload.toSlot.name) then
 		return false
 	end
 end, { inventoryFilter = { '^wardrobe:' } })
@@ -214,8 +248,12 @@ lib.callback.register('ox_inventory:clothing:wear', function(source, slotId, wor
 	if not inv then return false end
 
 	-- the garment comes from the pocket or from the player's own wardrobe
-	local from = fromWardrobe == true and getWardrobe(inv) or inv
-	if not from then return false end
+	local from = inv
+
+	if fromWardrobe == true then
+		from = getWardrobe(inv)
+		if not from then return false end
+	end
 
 	local slot = Inventory.GetSlot(from, slotId)
 	if not slot or (not config.items[slot.name] and slot.name ~= config.set) then return false end
@@ -270,15 +308,13 @@ lib.callback.register('ox_inventory:clothing:wear', function(source, slotId, wor
 		local wardrobe = getWardrobe(inv)
 		local free = (emptySlots or 0)
 
-		if wardrobe then
-			for i = 1, wardrobeSlots do
-				if not wardrobe.items[i] then free += 1 end
-			end
-		end
+		if wardrobe then free += freeSlots(wardrobe) end
 
 		if free < #returned - 1 then return false, 'cannot_carry' end
 	end
 
+	-- the slot may have changed while the skin and wardrobe loaded
+	if Inventory.GetSlot(from, slotId) ~= slot then return false end
 	if not Inventory.RemoveItem(from, slot.name, 1, nil, slotId) then return false end
 
 	for i = 1, #returned do

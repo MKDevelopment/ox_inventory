@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import useNuiEvent from '../../hooks/useNuiEvent';
 import InventoryControl from './InventoryControl';
 import InventoryHotbar from './InventoryHotbar';
-import { useAppDispatch, useAppSelector } from '../../store';
-import { clothingClosed, setEquipment } from '../../store/clothing';
-import { ClothingStage } from '../mystory/ClothingView';
+import { store, useAppDispatch, useAppSelector } from '../../store';
+import { clothingClosed, closeClothing, setCamera, setEquipment } from '../../store/clothing';
+import { ClothingStage, isWardrobe } from '../mystory/ClothingView';
 import { refreshSlots, setAdditionalMetadata, setupInventory } from '../../store/inventory';
 import { useExitListener } from '../../hooks/useExitListener';
 import type { Inventory as InventoryProps } from '../../typings';
@@ -39,11 +39,16 @@ const Inventory: React.FC = () => {
     leftInventory?: InventoryProps;
     rightInventory?: InventoryProps;
   }>('setupInventory', (data) => {
+    // another inventory replaced the wardrobe: leave the clothing tab so it is visible
+    const { clothing } = store.getState();
+    if (clothing.open && data.rightInventory && !isWardrobe(data.rightInventory)) closeClothing(dispatch);
+
     dispatch(setupInventory(data));
     !inventoryVisible && setInventoryVisible(true);
   });
 
   useNuiEvent('clothingEquipment', (data) => dispatch(setEquipment(data)));
+  useNuiEvent<boolean>('clothingCamera', (camera) => dispatch(setCamera(camera)));
 
   useNuiEvent('refreshSlots', (data) => dispatch(refreshSlots(data)));
 

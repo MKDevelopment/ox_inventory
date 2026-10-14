@@ -324,11 +324,22 @@ function client.openInventory(inv, data)
                 currentInventory.door = vehicleClass == 12 and { 2, 3 } or Vehicles.Storage[vehicleHash] and 4 or 5
             end
 
+            local door = currentInventory.door
+
             while currentInventory.entity == entity and invOpen and DoesEntityExist(entity) and Inventory.CanAccessTrunk(entity) do
                 Wait(100)
             end
 
-            if invOpen then client.closeInventory() end
+            if invOpen and currentInventory.entity == entity then
+                client.closeInventory()
+            elseif invOpen and DoesEntityExist(entity) then
+                -- another inventory (e.g. the wardrobe) replaced the trunk while the player panel stays open
+                if type(door) == 'table' then
+                    for i = 1, #door do SetVehicleDoorShut(entity, door[i], false) end
+                else
+                    SetVehicleDoorShut(entity, door, false)
+                end
+            end
         end)
     end
 
