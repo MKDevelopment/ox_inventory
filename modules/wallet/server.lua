@@ -120,7 +120,7 @@ local function getWalletItems(source)
 	if not inv then return items end
 
 	for _, name in ipairs(WalletCash.settings().searchable or {}) do
-		local found = Inventory.GetWalletItems(inv, name)
+		local found = Inventory.GetWalletItems(inv, name, true)
 
 		if #found > 0 then items[name] = found end
 	end

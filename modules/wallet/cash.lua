@@ -82,7 +82,8 @@ function WalletCash.take(inv, amount)
 	return changes
 end
 
----Copies of the `name` items inside the player's wallets, each tagged with `wallet = <wallet slot>`.
+---Copies of the `name` items inside the player's wallets. A copy has no `slot` (callers treat `slot`
+---as a pocket slot); it carries `wallet` (the wallet's pocket slot) and `containerSlot` instead.
 ---Only for searchable items (bank cards), so ordinary lookups never load wallet containers.
 ---@param inv OxInventory
 ---@param name string
@@ -101,6 +102,8 @@ function WalletCash.items(inv, name, getContainer)
 				if slotData.name == name then
 					local copy = table.clone(slotData)
 					copy.wallet = wallet.slot
+					copy.containerSlot = slotData.slot
+					copy.slot = nil
 					found[#found + 1] = copy
 				end
 			end

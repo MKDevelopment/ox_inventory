@@ -5,6 +5,7 @@ if not lib then return end
 local Inventory = require 'modules.inventory.server'
 local Items = require 'modules.items.server'
 local Payments = require 'modules.stores.payments'
+local Cart = require 'modules.stores.cart'
 
 local MAX_DISTANCE = 10.0
 local checkoutCooldown = {}
@@ -110,63 +111,113 @@ lib.callback.register('ox_inventory:checkoutShop', function(source, shopType, id
 
 	if Player(source).state.invBusy then return false end
 
-	local lines, moneyTotal, currencies = {}, 0, {}
+	-- one line per shop slot, even if the cart names a slot twice ('1' and 1)
+	local counts = {}
 
 	for key, value in pairs(cart) do
-		local slot = shop.items[toInt(key) or -1]
-		local item = slot and Items(slot.name)
-		local count = toInt(value)
+		local index, count = toInt(key), toInt(value)
+		local slot = index and shop.items[index]
 
-		if not item or not count or count < 1 or count > 1000 then return false, 'store_cart_invalid' end
-		if slot.count and slot.count < count then return false, 'store_out_of_stock' end
+		if not slot or not Items(slot.name) or not count or count < 1 or count > 1000 then return false, 'store_cart_invalid' end
 
+		counts[index] = (counts[index] or 0) + count
+		if counts[index] > 1000 then return false, 'store_cart_invalid' end
+	end
+
+	local lines = {}
+
+	-- licence checks may wait on the database, so they run before stock is reserved
+	for index, count in pairs(counts) do
+		local slot = shop.items[index]
 		local locked = lockReason(inv, slot, rank)
+
 		if locked then return false, LOCK_ERRORS[locked] end
 
-		local price = (slot.price or 0) * count
-		local currency = slot.currency or 'money'
+		lines[#lines + 1] = { slot = slot, item = Items(slot.name), count = count, metadata = slot.metadata }
+	end
+
+	if #lines == 0 then return false end
+
+	local moneyTotal, currencies = 0, {}
+
+	for i = 1, #lines do
+		local line = lines[i]
+		if line.slot.count and line.slot.count < line.count then return false, 'store_out_of_stock' end
+
+		local price = (line.slot.price or 0) * line.count
+		local currency = line.slot.currency or 'money'
 
 		if currency == 'money' then
 			moneyTotal += price
 		else
 			currencies[currency] = (currencies[currency] or 0) + price
 		end
-
-		lines[#lines + 1] = { slot = slot, item = item, count = count }
 	end
-
-	if #lines == 0 then return false end
 
 	for currency, amount in pairs(currencies) do
 		if Inventory.GetItemCount(inv, currency) < amount then return false, 'store_cannot_afford' end
 	end
 
+	if not Cart.canCarry(inv, lines) then return false, 'cannot_carry' end
+
+	-- reserve limited stock before paying, give it back if the payment fails
 	for i = 1, #lines do
-		local line = lines[i]
-		if not Inventory.CanCarryItem(inv, line.item, line.count, line.slot.metadata) then return false, 'cannot_carry' end
+		local slot = lines[i].slot
+		if slot.count then slot.count -= lines[i].count end
 	end
 
+	local option
+
 	if moneyTotal > 0 then
-		local paid, reason = Payments.charge(source, paymentId, moneyTotal, locale('store_bank_reason', shop.label))
-		if not paid then return false, reason end
+		local paid, result = Payments.charge(source, paymentId, moneyTotal, locale('store_bank_reason', shop.label))
+
+		if not paid then
+			for i = 1, #lines do
+				local slot = lines[i].slot
+				if slot.count then slot.count += lines[i].count end
+			end
+
+			return false, result
+		end
+
+		option = result
 	end
 
 	for currency, amount in pairs(currencies) do
 		Inventory.RemoveItem(inv, currency, amount)
 	end
 
+	local refundMoney, refundItems = 0, {}
+
 	for i = 1, #lines do
 		local line = lines[i]
 
-		if line.slot.count then line.slot.count -= line.count end
-
 		-- AddItem creates the metadata (weapon serials, food dates) and one slot per unique item
-		Inventory.AddItem(inv, line.item.name, line.count, line.slot.metadata and table.clone(line.slot.metadata) or nil)
+		if not Inventory.AddItem(inv, line.item.name, line.count, line.metadata and table.clone(line.metadata) or nil) then
+			local price = (line.slot.price or 0) * line.count
+			local currency = line.slot.currency or 'money'
+
+			if line.slot.count then line.slot.count += line.count end
+
+			if currency == 'money' then
+				refundMoney += price
+			else
+				refundItems[currency] = (refundItems[currency] or 0) + price
+			end
+		end
 	end
 
-	if server.loglevel > 0 and moneyTotal >= 500 then
-		lib.logger(inv.owner, 'buyItem', ('"%s" paid %d in %s'):format(inv.label, moneyTotal, shop.label), ('shop:%s'):format(shop.label))
+	if refundMoney > 0 and option then Payments.refund(source, option, refundMoney) end
+
+	for currency, amount in pairs(refundItems) do
+		Inventory.AddItem(inv, currency, amount)
 	end
 
-	return true, moneyTotal
+	local paidTotal = moneyTotal - refundMoney
+
+	if server.loglevel > 0 and paidTotal >= 500 then
+		lib.logger(inv.owner, 'buyItem', ('"%s" paid %d in %s'):format(inv.label, paidTotal, shop.label), ('shop:%s'):format(shop.label))
+	end
+
+	return true, paidTotal
 end)

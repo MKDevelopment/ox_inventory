@@ -3,6 +3,7 @@ if not lib then return end
 local Inventory = require 'modules.inventory.server'
 local Items = require 'modules.items.server'
 local Payments = require 'modules.stores.payments'
+local Cart = require 'modules.stores.cart'
 
 local config = lib.load('data.stores') or {}
 local STOCK_PREFIX = 'storestock_'
@@ -312,40 +313,70 @@ lib.callback.register('ox_inventory:checkoutStore', function(source, id, cart, p
 	if #lines == 0 then return false end
 	if not Inventory.CanCarryWeight(inv, totalWeight) then return false, 'cannot_carry' end
 
-	for i = 1, #lines do
-		if not Inventory.CanCarryItem(inv, lines[i].item, lines[i].count) then return false, 'cannot_carry' end
+	if store.type == 'stock' then
+		-- stock items keep their own metadata (freshness), so every stock slot taken is a new stack
+		for i = 1, #lines do
+			local line, remaining, stacks = lines[i], lines[i].count, 0
+
+			for _, slot in pairs(Inventory.GetSlotsWithItem(STOCK_PREFIX .. store.id, line.name) or {}) do
+				stacks += 1
+				remaining -= slot.count
+				if remaining <= 0 then break end
+			end
+
+			line.stacks = stacks
+		end
 	end
+
+	if not Cart.canCarry(inv, lines) then return false, 'cannot_carry' end
 
 	local payment = Payments.resolve(source, paymentId)
 	if not payment then return false, 'store_payment_invalid' end
 
-	local paid, reason = Payments.charge(source, paymentId, total, locale('store_bank_reason', store.label))
-	if not paid then return false, reason end
+	local paid, result = Payments.charge(source, paymentId, total, locale('store_bank_reason', store.label))
+	if not paid then return false, result end
 
 	-- cash, personal or business (sales history, receipt and logs)
 	local method = payment.kind
+	local refund = 0
 
 	for i = 1, #lines do
 		local line = lines[i]
+		local delivered = 0
 
 		if store.type == 'infinite' then
-			Inventory.AddItem(inv, line.name, line.count)
+			if Inventory.AddItem(inv, line.name, line.count) then delivered = line.count end
 		else
 			-- move the real items (with their metadata, e.g. freshness) out of the stock room
 			local stockId = STOCK_PREFIX .. store.id
-			local remaining = line.count
 
 			for _, slot in pairs(Inventory.GetSlotsWithItem(stockId, line.name) or {}) do
-				local take = math.min(remaining, slot.count)
+				local take = math.min(line.count - delivered, slot.count)
+				local metadata = slot.metadata
 
-				if Inventory.RemoveItem(stockId, line.name, take, slot.metadata, slot.slot) then
-					Inventory.AddItem(inv, line.name, take, slot.metadata)
-					remaining -= take
+				if Inventory.RemoveItem(stockId, line.name, take, metadata, slot.slot) then
+					if Inventory.AddItem(inv, line.name, take, metadata) then
+						delivered += take
+					else
+						Inventory.AddItem(stockId, line.name, take, metadata)
+						break
+					end
 				end
 
-				if remaining <= 0 then break end
+				if delivered >= line.count then break end
 			end
 		end
+
+		-- anything not handed over is paid back
+		if delivered < line.count then
+			refund += store.items[line.name].price * (line.count - delivered)
+			line.count = delivered
+		end
+	end
+
+	if refund > 0 then
+		Payments.refund(source, result, refund)
+		total -= refund
 	end
 
 	if store.owner or store.job then
@@ -359,7 +390,10 @@ lib.callback.register('ox_inventory:checkoutStore', function(source, id, cart, p
 
 	for i = 1, #lines do
 		local line = lines[i]
-		summary[i] = { name = line.name, count = line.count, price = store.items[line.name].price }
+
+		if line.count > 0 then
+			summary[#summary + 1] = { name = line.name, count = line.count, price = store.items[line.name].price }
+		end
 	end
 
 	MySQL.insert('INSERT INTO `mystory_store_sales` (`store`, `buyer`, `buyer_name`, `items`, `total`, `method`) VALUES (?, ?, ?, ?, ?, ?)', {

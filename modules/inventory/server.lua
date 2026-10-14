@@ -283,23 +283,42 @@ exports('GetInventoryItems', function(inv, owner)
 	return getInventory(inv, owner)?.items
 end)
 
----@param inv inventory
----@param slotId number
----@return OxInventory?
----@param wallet table wallet slot data
----@return OxInventory?
-local function getWalletContainer(wallet)
-	local metadata = wallet.metadata
+local warming = {}
 
-	return Inventory(metadata.container) or (metadata.size and Inventory.Create(metadata.container, wallet.label, 'container', metadata.size[1], 0, metadata.size[2], false)) or nil
+---The wallet's container. Lookups must not wait on the database, so an unloaded wallet is skipped
+---and loaded in the background unless `load` is set (only from callbacks that may wait).
+---@param wallet table wallet slot data
+---@param load? boolean
+---@return OxInventory?
+local function getWalletContainer(wallet, load)
+	local metadata = wallet.metadata
+	local container = Inventory(metadata.container)
+
+	if container or not metadata.size then return container end
+
+	local create = function()
+		return Inventory(metadata.container) or Inventory.Create(metadata.container, wallet.label, 'container', metadata.size[1], 0, metadata.size[2], false)
+	end
+
+	if load then return create() end
+
+	if not warming[metadata.container] then
+		warming[metadata.container] = true
+
+		CreateThread(function()
+			create()
+			warming[metadata.container] = nil
+		end)
+	end
 end
 
 ---Searchable items (bank cards) kept in the player's wallets.
 ---@param inv OxInventory
 ---@param name string
+---@param load? boolean load unloaded wallets (may wait on the database)
 ---@return table[]
-function Inventory.GetWalletItems(inv, name)
-	return WalletCash.items(inv, name, getWalletContainer)
+function Inventory.GetWalletItems(inv, name, load)
+	return WalletCash.items(inv, name, function(wallet) return getWalletContainer(wallet, load) end)
 end
 
 ---What the player's wallets add to a lookup: cash for `money`, matching items for searchable cards.
@@ -327,6 +346,9 @@ function Inventory.WalletCount(inv, name, metadata, strict)
 	return count
 end
 
+---@param inv inventory
+---@param slotId number
+---@return OxInventory?
 function Inventory.GetContainerFromSlot(inv, slotId)
 	local inventory = Inventory(inv)
 	local slotData = inventory and inventory.items[slotId]

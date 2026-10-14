@@ -140,7 +140,14 @@ local function resolveAll(source)
 
 	for itemName, kind in pairs(CARD_KINDS) do
 		if allowed[kind] ~= false then
-			for _, slot in ipairs(Inventory.GetSlotsWithItem(inv, itemName) or {}) do
+			local slots = Inventory.GetSlotsWithItem(inv, itemName) or {}
+
+			-- cards in wallets that are not loaded yet (store callbacks may wait on the database)
+			for _, card in ipairs(Inventory.GetWalletItems(inv, itemName, true)) do
+				slots[#slots + 1] = card
+			end
+
+			for _, slot in ipairs(slots) do
 				local option = cardOption(source, slot, kind)
 
 				if option and not seen[option.id] then
@@ -203,7 +210,9 @@ function Payments.charge(source, id, amount, reason)
 	if option.balance < amount then return false, 'store_cannot_afford' end
 
 	if option.kind == 'cash' then
-		return Inventory.RemoveItem(source, 'money', amount) and true or false, 'store_cannot_afford'
+		if not Inventory.RemoveItem(source, 'money', amount) then return false, 'store_cannot_afford' end
+
+		return true, option
 	end
 
 	local ok
@@ -221,7 +230,25 @@ function Payments.charge(source, id, amount, reason)
 		bank('AddTransaction', nil, option.iban, 'purchase', amount, reason, nil, option.cardId, reason)
 	end
 
-	return true
+	return true, option
+end
+
+---Gives back part of a charge (items that could not be handed over after paying).
+---@param source number
+---@param option PaymentOption the option returned by Payments.charge
+---@param amount integer
+function Payments.refund(source, option, amount)
+	if amount <= 0 then return end
+
+	if option.kind == 'cash' then
+		Inventory.AddItem(source, 'money', amount)
+	elseif option.kind == 'personal' then
+		pcall(config.bank.add, source, amount)
+	elseif option.society then
+		bank('AddSocietyMoney', option.society, amount)
+	end
+
+	lib.logger(Inventory(source)?.owner, 'storeRefund', ('refunded %d (%s) to player %d'):format(amount, option.kind, source))
 end
 
 return Payments

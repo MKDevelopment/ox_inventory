@@ -51,6 +51,11 @@ return {
 			player.removeAccountMoney('bank', amount, reason)
 			return true
 		end,
+		-- refunds when items could not be handed over after paying
+		add = function(source, amount)
+			local player = exports.es_extended:getSharedObject().GetPlayerFromId(source)
+			if player then player.addAccountMoney('bank', amount) end
+		end,
 	},
 
 	-- Discord logging: set the webhook on the server only, e.g.  set inventory:storeswebhook "https://discord.com/api/webhooks/..."

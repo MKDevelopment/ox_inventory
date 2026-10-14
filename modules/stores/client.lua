@@ -76,8 +76,12 @@ local function spawnPed(point)
 	if point.entity then return end
 
 	local pedConfig = config.defaultPed or {}
-	local model = lib.requestModel(point.store.ped or pedConfig.model or 'mp_m_shopkeep_01')
-	if not model then return end
+	local fallback = pedConfig.model or 'mp_m_shopkeep_01'
+
+	-- a mistyped model in /stores must not break the store: fall back to the default ped
+	local ok, model = pcall(lib.requestModel, point.store.ped or fallback)
+	if not ok or not model then ok, model = pcall(lib.requestModel, fallback) end
+	if not ok or not model then return end
 
 	local coords = point.coords
 	local entity = CreatePed(0, model, coords.x, coords.y, coords.z - 1.0, point.store.heading or 0.0, false, true)
