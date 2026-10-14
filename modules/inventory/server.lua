@@ -1,6 +1,7 @@
 if not lib then return end
 
 local Inventory = {}
+local WalletCash = require 'modules.wallet.cash'
 
 ---@type table<any, OxInventory>
 local Inventories = {}
@@ -285,6 +286,47 @@ end)
 ---@param inv inventory
 ---@param slotId number
 ---@return OxInventory?
+---@param wallet table wallet slot data
+---@return OxInventory?
+local function getWalletContainer(wallet)
+	local metadata = wallet.metadata
+
+	return Inventory(metadata.container) or (metadata.size and Inventory.Create(metadata.container, wallet.label, 'container', metadata.size[1], 0, metadata.size[2], false)) or nil
+end
+
+---Searchable items (bank cards) kept in the player's wallets.
+---@param inv OxInventory
+---@param name string
+---@return table[]
+function Inventory.GetWalletItems(inv, name)
+	return WalletCash.items(inv, name, getWalletContainer)
+end
+
+---What the player's wallets add to a lookup: cash for `money`, matching items for searchable cards.
+---@param inv OxInventory
+---@param name string
+---@param metadata? table
+---@param strict? boolean
+---@return integer
+function Inventory.WalletCount(inv, name, metadata, strict)
+	if not inv?.player then return 0 end
+
+	if name == 'money' then
+		return metadata and 0 or WalletCash.get(inv)
+	end
+
+	local count = 0
+	local tablematch = strict and table.matches or table.contains
+
+	for _, slotData in ipairs(Inventory.GetWalletItems(inv, name)) do
+		if not metadata or tablematch(slotData.metadata, metadata) then
+			count += slotData.count
+		end
+	end
+
+	return count
+end
+
 function Inventory.GetContainerFromSlot(inv, slotId)
 	local inventory = Inventory(inv)
 	local slotData = inventory and inventory.items[slotId]
@@ -460,6 +502,11 @@ function Inventory.GetAccountItemCounts(inv)
 		if accounts[v.name] then
 			accounts[v.name] += v.count
 		end
+	end
+
+	-- cash in carried wallets is part of the player's cash
+	if accounts.money and inventory.player then
+		accounts.money += WalletCash.get(inventory)
 	end
 
     return accounts
@@ -922,6 +969,8 @@ function Inventory.GetItem(inv, item, metadata, returnsCount)
                     count += v.count
 				end
 			end
+
+			count += Inventory.WalletCount(inv, item.name, metadata)
 		end
 
 		if returnsCount then return count else
@@ -1271,6 +1320,7 @@ function Inventory.Search(inv, search, items, metadata)
 		inv = Inventory(inv) --[[@as OxInventory]]
 
 		if inv then
+			local inventory = inv
 			inv = inv.items
 
 			if search == 'slots' then search = 1 elseif search == 'count' then search = 2 end
@@ -1302,6 +1352,16 @@ function Inventory.Search(inv, search, items, metadata)
 							end
 						end
 					end
+				end
+
+				if search == 1 then
+					for _, v in ipairs(Inventory.GetWalletItems(inventory, item)) do
+						if not metadata or table.contains(v.metadata, metadata) then
+							returnData[item][#returnData[item]+1] = v
+						end
+					end
+				elseif search == 2 then
+					returnData[item] += Inventory.WalletCount(inventory, item, metadata)
 				end
 			end
 
@@ -1386,6 +1446,26 @@ function Inventory.RemoveItem(inv, item, count, metadata, slot, ignoreTotal, str
 	local itemSlots, totalCount = Inventory.GetItemSlots(inv, item, metadata, strict)
 
 	if not itemSlots then return false end
+
+	if item.name == 'money' and inv.player and not slot and not metadata and count > totalCount then
+		local walletCash = WalletCash.get(inv)
+
+		if totalCount + walletCash < count then
+			if not ignoreTotal then return false, 'not_enough_items' end
+
+			count = totalCount + walletCash
+		end
+
+		for walletSlot, cash in pairs(WalletCash.take(inv, count - totalCount)) do
+			local walletMetadata = table.clone(inv.items[walletSlot].metadata)
+			walletMetadata.cash = cash
+			Inventory.SetMetadata(inv, walletSlot, walletMetadata)
+		end
+
+		if totalCount == 0 then return true end
+
+		count = totalCount
+	end
 
 	if totalCount and count > totalCount then
 		if not ignoreTotal then return false, 'not_enough_items' end
@@ -2270,6 +2350,12 @@ function Inventory.GetSlotWithItem(inv, itemName, metadata, strict)
             end
 		end
 	end
+
+	for _, slotData in ipairs(Inventory.GetWalletItems(inventory, item.name)) do
+		if not metadata or tablematch(slotData.metadata, metadata) then
+			return slotData
+		end
+	end
 end
 
 exports('GetSlotWithItem', Inventory.GetSlotWithItem)
@@ -2307,6 +2393,13 @@ function Inventory.GetSlotsWithItem(inv, itemName, metadata, strict)
                 n += 1
                 response[n] = slotData
             end
+		end
+	end
+
+	for _, slotData in ipairs(Inventory.GetWalletItems(inventory, item.name)) do
+		if not metadata or tablematch(slotData.metadata, metadata) then
+			n += 1
+			response[n] = slotData
 		end
 	end
 
@@ -2356,7 +2449,7 @@ function Inventory.GetItemCount(inv, itemName, metadata, strict)
 		end
 	end
 
-	return count
+	return count + Inventory.WalletCount(inventory, item.name, metadata, strict)
 end
 
 exports('GetItemCount', Inventory.GetItemCount)
