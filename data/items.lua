@@ -9258,7 +9258,7 @@ return {
 		close = true,
 	},
 
-	-- Clothing (33)
+	-- Clothing (21)
 	['bag'] = {
 		label = 'Bag',
 		description = 'Bag to store items',
@@ -9285,7 +9285,7 @@ return {
 		stack = false,
 		close = true,
 		consume = 0,
-		client = { export = 'ms_inventory.useClothing' },
+		client = { export = 'ox_inventory.useClothing' },
 	},
 
 	['c_bproof'] = {
@@ -9296,7 +9296,7 @@ return {
 		stack = false,
 		close = true,
 		consume = 0,
-		client = { export = 'ms_inventory.useClothing' },
+		client = { export = 'ox_inventory.useClothing' },
 	},
 
 	['c_bracelet'] = {
@@ -9307,7 +9307,7 @@ return {
 		stack = false,
 		close = true,
 		consume = 0,
-		client = { export = 'ms_inventory.useClothing' },
+		client = { export = 'ox_inventory.useClothing' },
 	},
 
 	['c_decal'] = {
@@ -9318,7 +9318,7 @@ return {
 		stack = false,
 		close = true,
 		consume = 0,
-		client = { export = 'ms_inventory.useClothing' },
+		client = { export = 'ox_inventory.useClothing' },
 	},
 
 	['c_ear'] = {
@@ -9329,7 +9329,7 @@ return {
 		stack = false,
 		close = true,
 		consume = 0,
-		client = { export = 'ms_inventory.useClothing' },
+		client = { export = 'ox_inventory.useClothing' },
 	},
 
 	['c_glasses'] = {
@@ -9340,7 +9340,7 @@ return {
 		stack = false,
 		close = true,
 		consume = 0,
-		client = { export = 'ms_inventory.useClothing' },
+		client = { export = 'ox_inventory.useClothing' },
 	},
 
 	['c_helmet'] = {
@@ -9351,7 +9351,7 @@ return {
 		stack = false,
 		close = true,
 		consume = 0,
-		client = { export = 'ms_inventory.useClothing' },
+		client = { export = 'ox_inventory.useClothing' },
 	},
 
 	['c_mask'] = {
@@ -9362,7 +9362,7 @@ return {
 		stack = false,
 		close = true,
 		consume = 0,
-		client = { export = 'ms_inventory.useClothing' },
+		client = { export = 'ox_inventory.useClothing' },
 	},
 
 	['c_necklace'] = {
@@ -9373,7 +9373,7 @@ return {
 		stack = false,
 		close = true,
 		consume = 0,
-		client = { export = 'ms_inventory.useClothing' },
+		client = { export = 'ox_inventory.useClothing' },
 	},
 
 	['c_pants'] = {
@@ -9384,7 +9384,7 @@ return {
 		stack = false,
 		close = true,
 		consume = 0,
-		client = { export = 'ms_inventory.useClothing' },
+		client = { export = 'ox_inventory.useClothing' },
 	},
 
 	['c_shoes'] = {
@@ -9395,7 +9395,7 @@ return {
 		stack = false,
 		close = true,
 		consume = 0,
-		client = { export = 'ms_inventory.useClothing' },
+		client = { export = 'ox_inventory.useClothing' },
 	},
 
 	['c_torso'] = {
@@ -9406,7 +9406,7 @@ return {
 		stack = false,
 		close = true,
 		consume = 0,
-		client = { export = 'ms_inventory.useClothing' },
+		client = { export = 'ox_inventory.useClothing' },
 	},
 
 	['c_watch'] = {
@@ -9417,7 +9417,7 @@ return {
 		stack = false,
 		close = true,
 		consume = 0,
-		client = { export = 'ms_inventory.useClothing' },
+		client = { export = 'ox_inventory.useClothing' },
 	},
 
 	['clothe_set'] = {
@@ -9428,7 +9428,7 @@ return {
 		stack = false,
 		close = true,
 		consume = 0,
-		client = { export = 'ms_inventory.useClothing' },
+		client = { export = 'ox_inventory.useClothing' },
 	},
 
 	['clothes'] = {
@@ -9446,36 +9446,6 @@ return {
 		consume = 0,
 	},
 
-	['clothing_accessory'] = {
-		label = 'Accessory',
-		category = 'clothing',
-		weight = 300,
-		stack = false,
-		close = true,
-		consume = 0,
-		client = { export = 'ox_inventory.wearClothing' },
-	},
-
-	['clothing_bag'] = {
-		label = 'Bag',
-		category = 'clothing',
-		weight = 300,
-		stack = false,
-		close = true,
-		consume = 0,
-		client = { export = 'ox_inventory.wearClothing' },
-	},
-
-	['clothing_bracelet'] = {
-		label = 'Bracelet',
-		category = 'clothing',
-		weight = 300,
-		stack = false,
-		close = true,
-		consume = 0,
-		client = { export = 'ox_inventory.wearClothing' },
-	},
-
 	['clothing_changer'] = {
 		label = 'Clothe Wardrobe',
 		description = '',
@@ -9483,96 +9453,6 @@ return {
 		weight = 0,
 		stack = true,
 		close = false,
-	},
-
-	['clothing_ears'] = {
-		label = 'Earrings',
-		category = 'clothing',
-		weight = 300,
-		stack = false,
-		close = true,
-		consume = 0,
-		client = { export = 'ox_inventory.wearClothing' },
-	},
-
-	['clothing_glasses'] = {
-		label = 'Glasses',
-		category = 'clothing',
-		weight = 300,
-		stack = false,
-		close = true,
-		consume = 0,
-		client = { export = 'ox_inventory.wearClothing' },
-	},
-
-	['clothing_hat'] = {
-		label = 'Hat',
-		category = 'clothing',
-		weight = 300,
-		stack = false,
-		close = true,
-		consume = 0,
-		client = { export = 'ox_inventory.wearClothing' },
-	},
-
-	['clothing_mask'] = {
-		label = 'Mask',
-		category = 'clothing',
-		weight = 300,
-		stack = false,
-		close = true,
-		consume = 0,
-		client = { export = 'ox_inventory.wearClothing' },
-	},
-
-	['clothing_pants'] = {
-		label = 'Pants',
-		category = 'clothing',
-		weight = 300,
-		stack = false,
-		close = true,
-		consume = 0,
-		client = { export = 'ox_inventory.wearClothing' },
-	},
-
-	['clothing_shoes'] = {
-		label = 'Shoes',
-		category = 'clothing',
-		weight = 300,
-		stack = false,
-		close = true,
-		consume = 0,
-		client = { export = 'ox_inventory.wearClothing' },
-	},
-
-	['clothing_top'] = {
-		label = 'Top',
-		category = 'clothing',
-		weight = 300,
-		stack = false,
-		close = true,
-		consume = 0,
-		client = { export = 'ox_inventory.wearClothing' },
-	},
-
-	['clothing_vest'] = {
-		label = 'Vest',
-		category = 'clothing',
-		weight = 300,
-		stack = false,
-		close = true,
-		consume = 0,
-		client = { export = 'ox_inventory.wearClothing' },
-	},
-
-	['clothing_watch'] = {
-		label = 'Watch',
-		category = 'clothing',
-		weight = 300,
-		stack = false,
-		close = true,
-		consume = 0,
-		client = { export = 'ox_inventory.wearClothing' },
 	},
 
 	['headbag'] = {

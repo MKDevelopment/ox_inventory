@@ -1,121 +1,67 @@
 if not lib then return end
 
-if not GetConvarBool('inventory:clothingitems', false) then return end
-
 local config = lib.load('data.clothing') --[[@as table]]
 
--- the server prints a warning and refuses every request in this case
-if type(config?.saveAppearance) ~= 'function' then return end
-
-local categories, itemCategory = {}, {}
-
-for i = 1, #config.categories do
-	local category = config.categories[i]
-	categories[i] = category
-	itemCategory[category.item] = category
+---@return table? tgiann-clothing exports, when the resource runs
+local function clothing()
+	return GetResourceState('tgiann-clothing') == 'started' and exports['tgiann-clothing'] or nil
 end
 
-local pedSex = {
-	[`mp_m_freemode_01`] = 'm',
-	[`mp_f_freemode_01`] = 'f',
-}
+local function modelKey(model)
+	return math.tointeger(model % 4294967296)
+end
 
----@param ped number
----@param category table
+---One part of the ped as tgiann-clothing stores it.
 ---@return table
-local function readWorn(ped, category)
-	local worn = {}
+local function readPart(ped, category, id)
+	local prop = category == 'prop'
+	local drawable = prop and GetPedPropIndex(ped, id) or GetPedDrawableVariation(ped, id)
+	local texture = prop and GetPedPropTextureIndex(ped, id) or GetPedTextureVariation(ped, id)
+	local collection, index = '', drawable
 
-	if category.components then
-		worn.components = {}
+	-- DLC clothing is addressed by collection name and local index (game build 2699+)
+	if drawable >= 0 then
+		local nameOf = prop and GetPedCollectionNameFromProp or GetPedCollectionNameFromDrawable
+		local indexOf = prop and GetPedCollectionLocalIndexFromProp or GetPedCollectionLocalIndexFromDrawable
 
-		for i = 1, #category.components do
-			local id = category.components[i]
-			worn.components[i] = { id, GetPedDrawableVariation(ped, id), GetPedTextureVariation(ped, id) }
+		if nameOf and indexOf then
+			collection = nameOf(ped, id, drawable) or ''
+			index = indexOf(ped, id, drawable)
 		end
 	end
 
-	if category.props then
-		worn.props = {}
-
-		for i = 1, #category.props do
-			local id = category.props[i]
-			worn.props[i] = { id, GetPedPropIndex(ped, id), GetPedPropTextureIndex(ped, id) }
-		end
-	end
-
-	return worn
+	return { category = category, id = id, data = { collection = collection, index = index, texture = math.max(texture, 0) } }
 end
 
----@param ped number
----@param sex string
----@param category table
+---@param def table data/clothing.lua item entry
+---@return table[]
+local function readGarment(ped, def)
+	local parts = {}
+
+	for _, id in ipairs(def.components or {}) do parts[#parts + 1] = readPart(ped, 'component', id) end
+	for _, id in ipairs(def.props or {}) do parts[#parts + 1] = readPart(ped, 'prop', id) end
+
+	return parts
+end
+
+---@return integer drawable that counts as "nothing worn"
+local function nakedIndex(ped, id)
+	return (config.naked[modelKey(GetEntityModel(ped))] or {})[id] or 0
+end
+
+---@param def table
 ---@return boolean
-local function isWorn(ped, sex, category)
-	if category.components then
-		local id = category.components[1]
-		return GetPedDrawableVariation(ped, id) ~= (config.naked[sex][id] or 0)
+local function isWorn(ped, def)
+	if def.components then
+		local id = def.components[1]
+		return GetPedDrawableVariation(ped, id) ~= nakedIndex(ped, id)
 	end
 
-	return GetPedPropIndex(ped, category.props[1]) ~= -1
+	return GetPedPropIndex(ped, def.props[1]) ~= -1
 end
 
----@param ped number
----@param components table?
----@param props table?
-local function apply(ped, components, props)
-	if components then
-		for i = 1, #components do
-			local entry = components[i]
-			SetPedComponentVariation(ped, entry[1], entry[2], entry[3], 0)
-		end
-	end
-
-	if props then
-		for i = 1, #props do
-			local entry = props[i]
-
-			if entry[2] == -1 then
-				ClearPedProp(ped, entry[1])
-			else
-				SetPedPropIndex(ped, entry[1], entry[2], entry[3], true)
-			end
-		end
-	end
-end
-
----@param ped number
----@param sex string
----@param category table
-local function strip(ped, sex, category)
-	if category.components then
-		for i = 1, #category.components do
-			local id = category.components[i]
-			SetPedComponentVariation(ped, id, config.naked[sex][id] or 0, 0, 0)
-		end
-	end
-
-	if category.props then
-		for i = 1, #category.props do
-			ClearPedProp(ped, category.props[i])
-		end
-	end
-end
-
----@param ped number
-local function save(ped)
-	local success, err = pcall(config.saveAppearance, ped)
-
-	if not success then
-		warn(('failed to save appearance after a clothing change: %s'):format(err))
-	end
-end
-
----@param reason string?
 local function notifyError(reason)
-	if reason then
-		lib.notify({ type = 'error', description = locale(reason) })
-	end
+	if reason then lib.notify({ type = 'error', description = locale(reason) }) end
 end
 
 ---@return boolean
@@ -134,79 +80,97 @@ local function playAnimation()
 	})
 end
 
----Item export for every clothing item in data/clothing.lua (client.export = 'ox_inventory.wearClothing').
-exports('wearClothing', function(_, slot)
-	local category = itemCategory[slot.name]
-	if not category or not canChange() then return end
+---@param resource table tgiann-clothing exports
+local function applyParts(resource, ped, parts)
+	for _, part in ipairs(parts) do
+		resource:SetPedClothing(ped, part.id, part.category == 'prop', part.data.collection, part.data.index, part.data.texture)
+	end
+end
 
+---Item export of c_* and clothe_set (client.export = 'ox_inventory.useClothing'): puts the garment on;
+---whatever it replaces comes back as an item.
+exports('useClothing', function(_, slot)
+	local resource = clothing()
+	if not resource or not canChange() or type(slot) ~= 'table' then return end
+
+	local metadata = slot.metadata or {}
 	local ped = cache.ped
-	local sex = pedSex[GetEntityModel(ped)]
 
-	if not sex then return notifyError('clothing_invalid_ped') end
-	if slot.metadata.sex ~= sex then return notifyError('clothing_wrong_sex') end
+	if type(metadata.data) ~= 'table' or not tonumber(metadata.model) then return notifyError('clothing_not_worn') end
+	if modelKey(tonumber(metadata.model)) ~= modelKey(GetEntityModel(ped)) then return notifyError('clothing_wrong_sex') end
 
-	local components = slot.metadata.components
+	-- garments worn in the places the new one covers
+	local covered = {}
+	for _, part in ipairs(metadata.data) do covered[('%s%s'):format(part.category, part.id)] = true end
 
-	if components then
-		for i = 1, #components do
-			local entry = components[i]
+	local worn = {}
 
-			if not IsPedComponentVariationValid(ped, entry[1], entry[2], entry[3]) then
-				return notifyError('clothing_wrong_sex')
+	for name, def in pairs(config.items) do
+		local parts = readGarment(ped, def)
+
+		for _, part in ipairs(parts) do
+			if covered[part.category .. part.id] then
+				worn[#worn + 1] = { item = name, parts = parts }
+				break
 			end
 		end
 	end
 
 	if not playAnimation() then return end
 
-	local success, response = lib.callback.await('ox_inventory:clothing:wear', false, slot.slot, readWorn(ped, category))
-
+	local success, response = lib.callback.await('ox_inventory:clothing:wear', false, slot.slot, worn)
 	if not success then return notifyError(response) end
 
-	apply(ped, response.components, response.props)
-	save(ped)
+	applyParts(resource, ped, response)
+
+	if slot.name == 'c_mask' then resource:ApplyMaskFaceReset() end
+
+	resource:SaveSkin()
 end)
 
----@param category table
-local function takeOff(category)
-	if not canChange() then return end
+---@param name string garment item
+local function takeOff(name)
+	local resource = clothing()
+	if not resource or not canChange() then return end
 
+	local def = config.items[name]
 	local ped = cache.ped
-	local sex = pedSex[GetEntityModel(ped)]
 
-	if not sex then return notifyError('clothing_invalid_ped') end
-	if not isWorn(ped, sex, category) then return notifyError('clothing_not_worn') end
-
+	if not isWorn(ped, def) then return notifyError('clothing_not_worn') end
 	if not playAnimation() then return end
 
-	local success, reason = lib.callback.await('ox_inventory:clothing:takeOff', false, category.name, readWorn(ped, category))
-
+	local parts = readGarment(ped, def)
+	local success, reason = lib.callback.await('ox_inventory:clothing:takeOff', false, name, parts)
 	if not success then return notifyError(reason) end
 
-	strip(ped, sex, category)
-	save(ped)
+	local naked = {}
+
+	for i, part in ipairs(parts) do
+		local prop = part.category == 'prop'
+		naked[i] = { category = part.category, id = part.id, data = { collection = '', index = prop and -1 or nakedIndex(ped, part.id), texture = 0 } }
+	end
+
+	applyParts(resource, ped, naked)
+	resource:SaveSkin()
 end
 
 RegisterCommand(config.command, function()
-	if not canChange() then return end
+	if not clothing() or not canChange() then return end
 
 	local ped = cache.ped
-	local sex = pedSex[GetEntityModel(ped)]
-
-	if not sex then return notifyError('clothing_invalid_ped') end
-
 	local options = {}
+	local Items = require 'modules.items.client'
 
-	for i = 1, #categories do
-		local category = categories[i]
+	for _, name in ipairs(config.order) do
+		local def = config.items[name]
 
-		if isWorn(ped, sex, category) then
+		if def and isWorn(ped, def) then
 			options[#options + 1] = {
-				title = category.label or locale(('clothing_part_%s'):format(category.name)),
+				title = Items[name]?.label or name,
 				description = locale('clothing_take_off'),
 				icon = 'shirt',
 				onSelect = takeOff,
-				args = category,
+				args = name,
 			}
 		end
 	end
