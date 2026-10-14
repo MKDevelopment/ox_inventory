@@ -6,6 +6,7 @@ local Inventory = require 'modules.inventory.server'
 local Items = require 'modules.items.server'
 local Payments = require 'modules.stores.payments'
 local Cart = require 'modules.stores.cart'
+local Taxes = require 'modules.stores.taxes'
 
 local MAX_DISTANCE = 10.0
 local checkoutCooldown = {}
@@ -198,6 +199,7 @@ lib.callback.register('ox_inventory:checkoutShop', function(source, shopType, id
 			local currency = line.slot.currency or 'money'
 
 			if line.slot.count then line.slot.count += line.count end
+			line.refunded = true
 
 			if currency == 'money' then
 				refundMoney += price
@@ -214,6 +216,18 @@ lib.callback.register('ox_inventory:checkoutShop', function(source, shopType, id
 	end
 
 	local paidTotal = moneyTotal - refundMoney
+	local taxLines = {}
+
+	for i = 1, #lines do
+		local line = lines[i]
+
+		if not line.refunded and (line.slot.currency or 'money') == 'money' then
+			taxLines[#taxLines + 1] = { name = line.item.name, total = (line.slot.price or 0) * line.count }
+		end
+	end
+
+	-- default shops have no owner: the tax included in the price goes to the City Hall budget
+	Taxes.collect(nil, paidTotal, Taxes.forLines(taxLines))
 
 	if server.loglevel > 0 and paidTotal >= 500 then
 		lib.logger(inv.owner, 'buyItem', ('"%s" paid %d in %s'):format(inv.label, paidTotal, shop.label), ('shop:%s'):format(shop.label))

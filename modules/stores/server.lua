@@ -4,6 +4,7 @@ local Inventory = require 'modules.inventory.server'
 local Items = require 'modules.items.server'
 local Payments = require 'modules.stores.payments'
 local Cart = require 'modules.stores.cart'
+local Taxes = require 'modules.stores.taxes'
 
 local config = lib.load('data.stores') or {}
 local STOCK_PREFIX = 'storestock_'
@@ -140,6 +141,26 @@ MySQL.ready(function()
 			exports.ox_inventory:RegisterStash(STOCK_PREFIX .. store.id, locale('store_stock_label', store.label), config.stockSlots or 60, config.stockWeight or 500000, nil, nil, store.coords)
 		end
 	end
+
+	Taxes.init({
+		storage = Taxes.mysqlStorage(),
+		getStore = function(id) return Stores[id] end,
+		saveCash = function(store)
+			MySQL.update('UPDATE `mystory_stores` SET `cash` = ? WHERE `id` = ?', { store.cash, store.id })
+		end,
+	})
+
+	Taxes.onSettled = function(store, row, paid, status)
+		discordLog(locale('store_log_tax'), locale('store_log_tax_text', store.id, store.label, paid, row.tax - row.paid - paid, status), 3447003)
+	end
+
+	-- settle ended tax periods now and every 10 minutes
+	CreateThread(function()
+		while true do
+			Taxes.settle()
+			Wait(600000)
+		end
+	end)
 
 	TriggerClientEvent('ox_inventory:storesUpdated', -1)
 end)
@@ -384,6 +405,17 @@ lib.callback.register('ox_inventory:checkoutStore', function(source, id, cart, p
 		MySQL.update('UPDATE `mystory_stores` SET `cash` = ? WHERE `id` = ?', { store.cash, store.id })
 	end
 
+	-- the tax included in the prices: owned stores accrue it, others pay the city now
+	local taxLines = {}
+
+	for i = 1, #lines do
+		local line = lines[i]
+		if line.count > 0 then taxLines[#taxLines + 1] = { name = line.name, total = store.items[line.name].price * line.count } end
+	end
+
+	local tax = Taxes.forLines(taxLines)
+	Taxes.collect(store, total, tax)
+
 	lib.logger(inv.owner, 'storeCheckout', ('"%s" paid %d (%s) in store %d (%s)'):format(inv.label, total, method, store.id, store.label))
 
 	local summary = {}
@@ -410,7 +442,8 @@ lib.callback.register('ox_inventory:checkoutStore', function(source, id, cart, p
 
 		local receipt = {
 			label = locale('store_receipt_label', store.label),
-			description = locale('store_receipt_description', os.date('%d.%m.%Y %H:%M'), table.concat(rows, '  \n'), total, locale(method == 'cash' and 'store_method_cash' or 'store_method_bank')),
+			description = locale('store_receipt_description', os.date('%d.%m.%Y %H:%M'), table.concat(rows, '  \n'), total, locale(method == 'cash' and 'store_method_cash' or 'store_method_bank'))
+				.. (tax > 0 and ('  \n' .. locale('store_receipt_tax', tax)) or ''),
 			store = store.label,
 			total = total,
 		}
@@ -453,19 +486,22 @@ lib.callback.register('ox_inventory:manageStore', function(source, id, action, d
 
 		return true
 	elseif action == 'withdraw' then
-		local amount = store.cash
-		if amount <= 0 then return false end
+		-- tax owed for the current and overdue periods stays in the till
+		local amount = store.cash - Taxes.owed(store.id)
+		if amount <= 0 then return false, 'store_tax_reserved' end
 
 		local inv = Inventory(source)
 		if not Inventory.CanCarryItem(inv, 'money', amount) then return false, 'cannot_carry' end
 
-		store.cash = 0
+		store.cash -= amount
 		Inventory.AddItem(inv, 'money', amount)
-		MySQL.update('UPDATE `mystory_stores` SET `cash` = 0 WHERE `id` = ?', { store.id })
+		MySQL.update('UPDATE `mystory_stores` SET `cash` = ? WHERE `id` = ?', { store.cash, store.id })
 		lib.logger(inv.owner, 'storeWithdraw', ('withdrew %d from store %d (%s)'):format(amount, store.id, store.label))
 		discordLog(locale('store_log_withdraw'), locale('store_log_withdraw_text', describePlayer(source), amount, store.id, store.label), 16098115)
 
 		return true, amount
+	elseif action == 'taxes' then
+		return true, Taxes.summary(store.id)
 	elseif action == 'history' then
 		local sales = MySQL.query.await('SELECT `buyer_name`, `items`, `total`, `method`, UNIX_TIMESTAMP(`created_at`) AS `time` FROM `mystory_store_sales` WHERE `store` = ? ORDER BY `id` DESC LIMIT ?', {
 			store.id, config.historyLimit or 50,

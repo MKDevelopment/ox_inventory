@@ -263,5 +263,18 @@
   "store_target_manage": "Manage store",
   "ui_store_ped": "Shopkeeper model",
   "ui_store_needs_license": "Licence required",
-  "ui_store_needs_grade": "Higher rank required"
+  "ui_store_needs_grade": "Higher rank required",
+  "store_receipt_tax": "incl. tax: $%s",
+  "store_tax_reserved": "The till only holds the tax owed to the city",
+  "store_log_tax": "Store tax settled",
+  "store_log_tax_text": "Store %s (%s) paid $%s of tax, $%s still due (%s)",
+  "ui_store_taxes": "Taxes",
+  "ui_store_tax_current": "This period",
+  "ui_store_tax_sales": "Sales",
+  "ui_store_tax_owed": "Reserved in the till",
+  "ui_store_tax_note": "Paid to the city from the till when the period ends",
+  "ui_store_tax_none": "No settled periods yet.",
+  "ui_store_tax_settled": "Paid",
+  "ui_store_tax_overdue": "Overdue",
+  "ui_store_tax_open": "Open"
 }

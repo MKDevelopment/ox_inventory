@@ -5,6 +5,7 @@ import { fetchNui } from '../../utils/fetchNui';
 import { SearchIcon } from '../mystory/icons';
 import { StoreData, StoreManagement, itemLabel, money, t } from './StoreView';
 import StoreHistory from './StoreHistory';
+import StoreTaxes from './StoreTaxes';
 import { useImageFallback } from '../../store/imageFallback';
 
 type Props = { store: StoreData; management: StoreManagement; onUpdate: (store: StoreData) => void };
@@ -13,7 +14,7 @@ const StoreManage: React.FC<Props> = ({ store, management, onUpdate }) => {
   useImageFallback();
   const [prices, setPrices] = useState<Record<string, string>>({});
   const [adding, setAdding] = useState('');
-  const [view, setView] = useState<'products' | 'history'>('products');
+  const [view, setView] = useState<'products' | 'history' | 'taxes'>('products');
 
   const manage = async (action: string, data?: unknown) => {
     const response = await fetchNui<{ success: boolean; store?: StoreData }>('storeManage', {
@@ -78,10 +79,15 @@ const StoreManage: React.FC<Props> = ({ store, management, onUpdate }) => {
         <button className={view === 'history' ? 'active' : undefined} onClick={() => setView('history')}>
           {t('ui_store_history', 'Sales')}
         </button>
+        <button className={view === 'taxes' ? 'active' : undefined} onClick={() => setView('taxes')}>
+          {t('ui_store_taxes', 'Taxes')}
+        </button>
       </div>
 
       {view === 'history' ? (
         <StoreHistory storeId={store.id} />
+      ) : view === 'taxes' ? (
+        <StoreTaxes storeId={store.id} />
       ) : (
         <>
           <div className="store-add">
