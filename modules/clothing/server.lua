@@ -118,13 +118,14 @@ lib.callback.register('ox_inventory:clothing:wear', function(source, slotId, wor
 			return false
 		end
 
-		local overlaps = false
+		-- only the parts the new garment replaces come back; the rest stays on the ped
+		local replaced = {}
 		for _, part in ipairs(entry.parts) do
-			if covered[part.category .. part.id] then overlaps = true end
+			if covered[part.category .. part.id] then replaced[#replaced + 1] = part end
 		end
 
-		if overlaps and not isNaked(entry.parts, model) then
-			returned[#returned + 1] = { name = entry.item, metadata = garmentMetadata(entry.item, entry.parts, metadata.model) }
+		if #replaced > 0 and not isNaked(replaced, model) then
+			returned[#returned + 1] = { name = entry.item, metadata = garmentMetadata(entry.item, replaced, metadata.model) }
 		end
 	end
 

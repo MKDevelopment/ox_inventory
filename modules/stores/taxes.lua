@@ -5,6 +5,7 @@ local Items = Items or require 'modules.items.server'
 
 local Taxes = {}
 local rates = {}
+local RATE_TTL = 300 -- seconds; City Hall rates can change in game
 local storage, getStore, saveCash
 
 local DAY = 86400
@@ -32,13 +33,21 @@ function Taxes.rate(name)
 	if not resource then return 0 end
 
 	local path = Taxes.path(name)
+	local cached = rates[path]
+	local now = os.time()
 
-	if rates[path] == nil then
+	if not cached or now - cached.at > RATE_TTL then
 		local ok, _, _, percent = pcall(resource.getTaxAmount, resource, 100, path)
-		rates[path] = ok and tonumber(percent) or 0
+		percent = ok and tonumber(percent)
+
+		-- a failed call (e.g. vms_cityhall still starting) is not cached
+		if not percent then return cached and cached.percent or 0 end
+
+		cached = { percent = percent, at = now }
+		rates[path] = cached
 	end
 
-	return rates[path]
+	return cached.percent
 end
 
 ---Tax contained in a gross (tax-inclusive) amount.
@@ -67,15 +76,19 @@ end
 ---@return integer, integer
 local function periodBounds(now)
 	local days = PERIODS[config.period]
+	local date = os.date('*t', now)
 
 	if days then
-		-- weeks start on Monday 00:00 UTC (1970-01-05 was a Monday)
-		local length = days * DAY
-		local start = now - ((now - 4 * DAY) % length)
-		return start, start + length
+		-- periods start on Monday 00:00 server time; biweekly periods count weeks from 1970-01-05
+		local monday = os.time({ year = date.year, month = date.month, day = date.day - (date.wday + 5) % 7, hour = 0 })
+
+		if days == 14 and math.floor((monday - 345600) / (7 * DAY) + 0.5) % 2 == 1 then
+			monday = monday - 7 * DAY
+		end
+
+		return monday, monday + days * DAY
 	end
 
-	local date = os.date('*t', now)
 	local start = os.time({ year = date.year, month = date.month, day = 1, hour = 0 })
 	local nextMonth = os.time({ year = date.year + (date.month == 12 and 1 or 0), month = date.month % 12 + 1, day = 1, hour = 0 })
 	return start, nextMonth
@@ -118,22 +131,32 @@ function Taxes.settle()
 		local store = getStore(row.store)
 		local due = row.tax - row.paid
 
-		if store and due > 0 then
+		if not store then
+			-- the store was deleted; its tax can no longer be collected
+			storage.update(row.id, row.paid, 'orphaned', row.paid)
+		elseif due > 0 then
 			local take = math.min(math.max(store.cash or 0, 0), due)
 			local paid = row.paid + take
 			local status = paid >= row.tax and 'settled' or 'overdue'
 
-			-- the expected paid value guards against settling the same row twice
-			if (take > 0 or status ~= row.status) and storage.update(row.id, paid, status, row.paid) == 1 then
-				if take > 0 then
-					store.cash -= take
-					saveCash(store)
-					if resource then pcall(resource.addCompanyMoney, resource, take, true) end
-				end
+			if take > 0 or status ~= row.status then
+				-- take the money out of the till before waiting on the database, so a withdrawal
+				-- running meanwhile cannot pay it out as well
+				store.cash -= take
 
-				if Taxes.onSettled then Taxes.onSettled(store, row, take, status) end
+				-- the expected paid value guards against settling the same row twice
+				if storage.update(row.id, paid, status, row.paid) == 1 then
+					if take > 0 then
+						saveCash(store)
+						if resource then pcall(resource.addCompanyMoney, resource, take, true) end
+					end
+
+					if Taxes.onSettled then Taxes.onSettled(store, row, take, status) end
+				else
+					store.cash += take
+				end
 			end
-		elseif due <= 0 then
+		else
 			storage.update(row.id, row.paid, 'settled', row.paid)
 		end
 	end
@@ -183,18 +206,18 @@ function Taxes.mysqlStorage()
 
 	return {
 		add = function(store, start, finish, sales, tax)
-			MySQL.insert('INSERT INTO `mystory_store_taxes` (`store`, `period_start`, `period_end`, `sales`, `tax`) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `sales` = `sales` + VALUES(`sales`), `tax` = `tax` + VALUES(`tax`)', {
+			MySQL.insert.await('INSERT INTO `mystory_store_taxes` (`store`, `period_start`, `period_end`, `sales`, `tax`) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `sales` = `sales` + VALUES(`sales`), `tax` = `tax` + VALUES(`tax`)', {
 				store, start, finish, sales, tax,
 			})
 		end,
 		due = function(now)
-			return MySQL.query.await('SELECT * FROM `mystory_store_taxes` WHERE (`status` = "open" AND `period_end` <= ?) OR `status` = "overdue"', { now }) or {}
+			return MySQL.query.await("SELECT * FROM `mystory_store_taxes` WHERE (`status` = 'open' AND `period_end` <= ?) OR `status` = 'overdue'", { now }) or {}
 		end,
 		update = function(id, paid, status, expectedPaid)
 			return MySQL.update.await('UPDATE `mystory_store_taxes` SET `paid` = ?, `status` = ? WHERE `id` = ? AND `paid` = ?', { paid, status, id, expectedPaid })
 		end,
 		owed = function(store)
-			return tonumber(MySQL.scalar.await('SELECT COALESCE(SUM(`tax` - `paid`), 0) FROM `mystory_store_taxes` WHERE `store` = ? AND `status` <> "settled"', { store })) or 0
+			return tonumber(MySQL.scalar.await("SELECT COALESCE(SUM(`tax` - `paid`), 0) FROM `mystory_store_taxes` WHERE `store` = ? AND `status` IN ('open', 'overdue')", { store })) or 0
 		end,
 		history = function(store)
 			return MySQL.query.await('SELECT * FROM `mystory_store_taxes` WHERE `store` = ? ORDER BY `period_start` DESC LIMIT 12', { store }) or {}

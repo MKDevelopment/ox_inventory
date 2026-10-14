@@ -75,7 +75,19 @@ local function hasLicense(inv, license)
 		if not ok or not serial then return false end
 		if storesConfig.requireDocumentItem == false then return true end
 
-		return Inventory.GetItemCount(inv, document, { document_id = serial }) > 0
+		-- the carried document must be the valid one; serials may come back as numbers or strings
+		local wanted = tostring(serial)
+
+		for _, slot in ipairs(Inventory.GetSlotsWithItem(inv, document) or {}) do
+			if tostring(slot.metadata?.document_id) == wanted then return true end
+		end
+
+		-- wallets that are not loaded yet (shop callbacks may wait on the database)
+		for _, slot in ipairs(Inventory.GetWalletItems(inv, document, true)) do
+			if tostring(slot.metadata?.document_id) == wanted then return true end
+		end
+
+		return false
 	end
 
 	return not server.hasLicense or server.hasLicense(inv, license) and true or false

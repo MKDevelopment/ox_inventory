@@ -326,7 +326,7 @@ lib.callback.register('ox_inventory:checkoutStore', function(source, id, cart, p
 
 		if stockCounts[name] < count then return false, 'store_out_of_stock' end
 
-		lines[#lines + 1] = { name = name, count = count, item = item }
+		lines[#lines + 1] = { name = name, count = count, item = item, price = entry.price }
 		total += entry.price * count
 		totalWeight += (item.weight or 0) * count
 	end
@@ -390,7 +390,7 @@ lib.callback.register('ox_inventory:checkoutStore', function(source, id, cart, p
 
 		-- anything not handed over is paid back
 		if delivered < line.count then
-			refund += store.items[line.name].price * (line.count - delivered)
+			refund += line.price * (line.count - delivered)
 			line.count = delivered
 		end
 	end
@@ -410,7 +410,7 @@ lib.callback.register('ox_inventory:checkoutStore', function(source, id, cart, p
 
 	for i = 1, #lines do
 		local line = lines[i]
-		if line.count > 0 then taxLines[#taxLines + 1] = { name = line.name, total = store.items[line.name].price * line.count } end
+		if line.count > 0 then taxLines[#taxLines + 1] = { name = line.name, total = line.price * line.count } end
 	end
 
 	local tax = Taxes.forLines(taxLines)
@@ -424,7 +424,7 @@ lib.callback.register('ox_inventory:checkoutStore', function(source, id, cart, p
 		local line = lines[i]
 
 		if line.count > 0 then
-			summary[#summary + 1] = { name = line.name, count = line.count, price = store.items[line.name].price }
+			summary[#summary + 1] = { name = line.name, count = line.count, price = line.price }
 		end
 	end
 
@@ -486,8 +486,10 @@ lib.callback.register('ox_inventory:manageStore', function(source, id, action, d
 
 		return true
 	elseif action == 'withdraw' then
-		-- tax owed for the current and overdue periods stays in the till
-		local amount = store.cash - Taxes.owed(store.id)
+		-- tax owed for the current and overdue periods stays in the till; the owed query waits on the
+		-- database, so the till is read and emptied only after it, with nothing in between that yields
+		local owed = Taxes.owed(store.id)
+		local amount = store.cash - owed
 		if amount <= 0 then return false, 'store_tax_reserved' end
 
 		local inv = Inventory(source)
