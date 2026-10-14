@@ -12,13 +12,13 @@ type Sale = {
 
 type History = { sales: Sale[]; today: number; week: number };
 
-const formatTime = (unix: number) =>
-  new Date(unix * 1000).toLocaleString('pl-PL', {
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+const pad = (value: number) => String(value).padStart(2, '0');
+
+// dd.mm hh:mm, independent of the CEF locale
+const formatTime = (unix: number) => {
+  const date = new Date(unix * 1000);
+  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
 
 const StoreHistory: React.FC<{ storeId: number }> = ({ storeId }) => {
   const [history, setHistory] = useState<History | null>(null);

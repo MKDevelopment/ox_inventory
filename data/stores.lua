@@ -1,6 +1,6 @@
--- Player/job-run stores with a stock room and a cart. Manage them in game with /sklepy (admins).
+-- Player/job-run stores with a stock room and a cart. Admins manage them in game with /stores (see `command`).
 return {
-	command = 'sklepy',
+	command = 'stores',
 	adminAce = 'group.admin',
 
 	-- 'cash' uses the money item, 'bank' the ESX bank account

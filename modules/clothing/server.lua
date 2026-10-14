@@ -11,6 +11,12 @@ end
 local Inventory = require 'modules.inventory.server'
 local Utils = require 'modules.utils.server'
 
+---@param category table
+---@return string
+local function getLabel(category)
+	return category.label or locale(('clothing_part_%s'):format(category.name))
+end
+
 local categories, itemCategory = {}, {}
 
 for i = 1, #config.categories do
@@ -87,8 +93,8 @@ local function buildMetadata(category, sex, worn)
 		sex = sex,
 		components = worn.components,
 		props = worn.props,
-		label = ('%s #%d'):format(category.label, first[2]),
-		description = ('Model %d, wariant %d'):format(first[2], first[3]),
+		label = ('%s #%d'):format(getLabel(category), first[2]),
+		description = locale('clothing_variant', first[2], first[3]),
 	}
 end
 

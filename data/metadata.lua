@@ -1,12 +1,6 @@
 return {
-	-- Metadata keys shown in the item tooltip, in this order.
-	display = {
-		{ quality = 'Jakość' },
-		{ producer = 'Producent' },
-		{ produced = 'Data produkcji' },
-		{ batch = 'Partia' },
-		{ note = 'Notatka' },
-	},
+	-- Metadata keys shown in the item tooltip, in this order. Labels come from the locale key meta_<key>.
+	display = { 'quality', 'producer', 'produced', 'batch', 'note' },
 
 	-- Players can rename items and attach a note from the context menu.
 	editing = {

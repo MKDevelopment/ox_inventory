@@ -121,7 +121,7 @@ return {
 	},
 
 	['cooler'] = {
-		label = 'Przenośna lodówka',
+		label = 'Portable Cooler',
 		category = 'tools',
 		weight = 2500,
 		stack = false,
@@ -130,7 +130,7 @@ return {
 	},
 
 	['receipt'] = {
-		label = 'Paragon',
+		label = 'Receipt',
 		category = 'documents',
 		weight = 1,
 		stack = false,
@@ -255,7 +255,7 @@ return {
 
 	-- Clothing as items (modules/clothing, data/clothing.lua); requires `setr inventory:clothingitems true`
 	['clothing_top'] = {
-		label = 'Góra',
+		label = 'Top',
 		weight = 300,
 		stack = false,
 		close = true,
@@ -266,7 +266,7 @@ return {
 	},
 
 	['clothing_pants'] = {
-		label = 'Spodnie',
+		label = 'Pants',
 		weight = 300,
 		stack = false,
 		close = true,
@@ -277,7 +277,7 @@ return {
 	},
 
 	['clothing_shoes'] = {
-		label = 'Buty',
+		label = 'Shoes',
 		weight = 300,
 		stack = false,
 		close = true,
@@ -288,7 +288,7 @@ return {
 	},
 
 	['clothing_mask'] = {
-		label = 'Maska',
+		label = 'Mask',
 		weight = 300,
 		stack = false,
 		close = true,
@@ -299,7 +299,7 @@ return {
 	},
 
 	['clothing_accessory'] = {
-		label = 'Akcesoria',
+		label = 'Accessory',
 		weight = 300,
 		stack = false,
 		close = true,
@@ -310,7 +310,7 @@ return {
 	},
 
 	['clothing_vest'] = {
-		label = 'Kamizelka',
+		label = 'Vest',
 		weight = 300,
 		stack = false,
 		close = true,
@@ -321,7 +321,7 @@ return {
 	},
 
 	['clothing_bag'] = {
-		label = 'Torba',
+		label = 'Bag',
 		weight = 300,
 		stack = false,
 		close = true,
@@ -332,7 +332,7 @@ return {
 	},
 
 	['clothing_hat'] = {
-		label = 'Czapka',
+		label = 'Hat',
 		weight = 300,
 		stack = false,
 		close = true,
@@ -343,7 +343,7 @@ return {
 	},
 
 	['clothing_glasses'] = {
-		label = 'Okulary',
+		label = 'Glasses',
 		weight = 300,
 		stack = false,
 		close = true,
@@ -354,7 +354,7 @@ return {
 	},
 
 	['clothing_ears'] = {
-		label = 'Kolczyki',
+		label = 'Earrings',
 		weight = 300,
 		stack = false,
 		close = true,
@@ -365,7 +365,7 @@ return {
 	},
 
 	['clothing_watch'] = {
-		label = 'Zegarek',
+		label = 'Watch',
 		weight = 300,
 		stack = false,
 		close = true,
@@ -376,7 +376,7 @@ return {
 	},
 
 	['clothing_bracelet'] = {
-		label = 'Bransoletka',
+		label = 'Bracelet',
 		weight = 300,
 		stack = false,
 		close = true,

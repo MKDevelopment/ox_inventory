@@ -143,7 +143,7 @@ RegisterNUICallback('storeManage', function(data, cb)
 	cb({ success = success, result = result, store = lib.callback.await('ox_inventory:openStore', false, data.id) })
 end)
 
-RegisterCommand(config.command or 'sklepy', function()
+RegisterCommand(config.command or 'stores', function()
 	if storeOpen or not PlayerData.loaded then return end
 
 	local list = lib.callback.await('ox_inventory:adminStores', false, 'list')

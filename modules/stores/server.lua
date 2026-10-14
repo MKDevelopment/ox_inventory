@@ -24,7 +24,7 @@ local function discordLog(title, description, colour)
 	if webhook == '' then return end
 
 	PerformHttpRequest(webhook, function() end, 'POST', json.encode({
-		username = 'MyStory Sklepy',
+		username = 'MyStory Stores',
 		embeds = { { title = title, description = description, color = colour or 7101695, footer = { text = os.date('%d.%m.%Y %H:%M:%S') } } },
 	}), { ['Content-Type'] = 'application/json' })
 end
@@ -126,7 +126,7 @@ MySQL.ready(function()
 
 	for _, store in pairs(Stores) do
 		if store.type == 'stock' then
-			exports.ox_inventory:RegisterStash(STOCK_PREFIX .. store.id, ('%s (magazyn)'):format(store.label), config.stockSlots or 60, config.stockWeight or 500000, nil, nil, store.coords)
+			exports.ox_inventory:RegisterStash(STOCK_PREFIX .. store.id, locale('store_stock_label', store.label), config.stockSlots or 60, config.stockWeight or 500000, nil, nil, store.coords)
 		end
 	end
 
@@ -326,7 +326,7 @@ lib.callback.register('ox_inventory:checkoutStore', function(source, id, cart, m
 		if not Inventory.CanCarryItem(inv, lines[i].item, lines[i].count) then return false, 'cannot_carry' end
 	end
 
-	if not charge(source, method, total, ('Zakupy: %s'):format(store.label)) then return false, 'store_cannot_afford' end
+	if not charge(source, method, total, locale('store_bank_reason', store.label)) then return false, 'store_cannot_afford' end
 
 	for i = 1, #lines do
 		local line = lines[i]
@@ -378,8 +378,8 @@ lib.callback.register('ox_inventory:checkoutStore', function(source, id, cart, m
 		end
 
 		local receipt = {
-			label = ('Paragon: %s'):format(store.label),
-			description = ('%s  \n%s  \n**Razem: $%d** (%s)'):format(os.date('%d.%m.%Y %H:%M'), table.concat(rows, '  \n'), total, method == 'cash' and 'gotówka' or 'karta'),
+			label = locale('store_receipt_label', store.label),
+			description = locale('store_receipt_description', os.date('%d.%m.%Y %H:%M'), table.concat(rows, '  \n'), total, locale(method == 'cash' and 'store_method_cash' or 'store_method_bank')),
 			store = store.label,
 			total = total,
 		}
@@ -390,7 +390,7 @@ lib.callback.register('ox_inventory:checkoutStore', function(source, id, cart, m
 	end
 
 	if total >= (config.logThreshold or 5000) then
-		discordLog('Zakup', ('%s zapłacił **$%d** (%s) w sklepie #%d %s'):format(describePlayer(source), total, method, store.id, store.label))
+		discordLog(locale('store_log_purchase'), locale('store_log_purchase_text', describePlayer(source), total, method, store.id, store.label))
 	end
 
 	return true, total
@@ -432,7 +432,7 @@ lib.callback.register('ox_inventory:manageStore', function(source, id, action, d
 		Inventory.AddItem(inv, 'money', amount)
 		MySQL.update('UPDATE `mystory_stores` SET `cash` = 0 WHERE `id` = ?', { store.id })
 		lib.logger(inv.owner, 'storeWithdraw', ('withdrew %d from store %d (%s)'):format(amount, store.id, store.label))
-		discordLog('Wypłata z kasy', ('%s wypłacił **$%d** ze sklepu #%d %s'):format(describePlayer(source), amount, store.id, store.label), 16098115)
+		discordLog(locale('store_log_withdraw'), locale('store_log_withdraw_text', describePlayer(source), amount, store.id, store.label), 16098115)
 
 		return true, amount
 	elseif action == 'history' then
@@ -540,11 +540,11 @@ lib.callback.register('ox_inventory:adminStores', function(source, action, data)
 		}
 
 		if fields.type == 'stock' then
-			exports.ox_inventory:RegisterStash(STOCK_PREFIX .. id, ('%s (magazyn)'):format(fields.label), config.stockSlots or 60, config.stockWeight or 500000, nil, nil, coords)
+			exports.ox_inventory:RegisterStash(STOCK_PREFIX .. id, locale('store_stock_label', fields.label), config.stockSlots or 60, config.stockWeight or 500000, nil, nil, coords)
 		end
 
 		broadcastPoints()
-		discordLog('Nowy sklep', ('%s utworzył sklep #%d %s'):format(describePlayer(source), id, fields.label), 5763719)
+		discordLog(locale('store_log_create'), locale('store_log_create_text', describePlayer(source), id, fields.label), 5763719)
 		return true, id
 	end
 
@@ -561,7 +561,7 @@ lib.callback.register('ox_inventory:adminStores', function(source, action, data)
 		for k, v in pairs(fields) do store[k] = v end
 
 		if store.type == 'stock' then
-			exports.ox_inventory:RegisterStash(STOCK_PREFIX .. store.id, ('%s (magazyn)'):format(store.label), config.stockSlots or 60, config.stockWeight or 500000, nil, nil, store.coords)
+			exports.ox_inventory:RegisterStash(STOCK_PREFIX .. store.id, locale('store_stock_label', store.label), config.stockSlots or 60, config.stockWeight or 500000, nil, nil, store.coords)
 		end
 
 		MySQL.update('UPDATE `mystory_stores` SET `label` = ?, `type` = ?, `blip` = ?, `owner` = ?, `job` = ?, `grade` = ? WHERE `id` = ?', {
@@ -569,20 +569,20 @@ lib.callback.register('ox_inventory:adminStores', function(source, action, data)
 		})
 
 		broadcastPoints()
-		discordLog('Edycja sklepu', ('%s zmienił sklep #%d %s (typ %s, praca %s %d+, właściciel %s)'):format(describePlayer(source), store.id, store.label, store.type, store.job or '-', store.grade, store.owner or '-'))
+		discordLog(locale('store_log_update'), locale('store_log_update_text', describePlayer(source), store.id, store.label, store.type, store.job or '-', store.grade, store.owner or '-'))
 		return true
 	elseif action == 'move' then
 		store.coords = GetEntityCoords(GetPlayerPed(source))
 		MySQL.update('UPDATE `mystory_stores` SET `coords` = ? WHERE `id` = ?', { json.encode({ x = store.coords.x, y = store.coords.y, z = store.coords.z }), store.id })
 
 		if store.type == 'stock' then
-			exports.ox_inventory:RegisterStash(STOCK_PREFIX .. store.id, ('%s (magazyn)'):format(store.label), config.stockSlots or 60, config.stockWeight or 500000, nil, nil, store.coords)
+			exports.ox_inventory:RegisterStash(STOCK_PREFIX .. store.id, locale('store_stock_label', store.label), config.stockSlots or 60, config.stockWeight or 500000, nil, nil, store.coords)
 		end
 
 		broadcastPoints()
 		return true
 	elseif action == 'delete' then
-		discordLog('Usunięcie sklepu', ('%s usunął sklep #%d %s (w kasie $%d)'):format(describePlayer(source), store.id, store.label, store.cash), 15548997)
+		discordLog(locale('store_log_delete'), locale('store_log_delete_text', describePlayer(source), store.id, store.label, store.cash), 15548997)
 		Stores[store.id] = nil
 		MySQL.update('DELETE FROM `mystory_stores` WHERE `id` = ?', { store.id })
 		MySQL.update('DELETE FROM `mystory_store_items` WHERE `store` = ?', { store.id })

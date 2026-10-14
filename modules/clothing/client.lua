@@ -202,7 +202,7 @@ RegisterCommand(config.command, function()
 
 		if isWorn(ped, sex, category) then
 			options[#options + 1] = {
-				title = category.label,
+				title = category.label or locale(('clothing_part_%s'):format(category.name)),
 				description = locale('clothing_take_off'),
 				icon = 'shirt',
 				onSelect = takeOff,

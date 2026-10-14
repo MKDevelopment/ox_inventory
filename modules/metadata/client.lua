@@ -5,7 +5,14 @@ local config = lib.load('data.metadata') or {}
 if config.display then
 	-- the export is registered by modules/items/client, which loads after this module
 	CreateThread(function()
-		exports[shared.resource]:displayMetadata(config.display)
+		local labels = {}
+
+		for i = 1, #config.display do
+			local key = config.display[i]
+			labels[i] = { [key] = locale(('meta_%s'):format(key)) }
+		end
+
+		exports[shared.resource]:displayMetadata(labels)
 	end)
 end
 
