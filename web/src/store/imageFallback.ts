@@ -33,6 +33,12 @@ export const withImageFallback = (url?: string) => {
   return failed.has(url) ? placeholder : url;
 };
 
+/** Whether an image is known to be missing (checks it on first use). */
+export const imageFailed = (url: string) => {
+  check(url);
+  return failed.has(url);
+};
+
 const subscribe = (listener: () => void) => {
   listeners.add(listener);
   return () => listeners.delete(listener);

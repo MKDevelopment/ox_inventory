@@ -222,11 +222,12 @@ local cam, savedHeading
 ---@return table[] the 13 garments with what is worn
 local function equipment()
 	local ped = cache.ped
+	local model = modelKey(GetEntityModel(ped))
 	local list = {}
 
 	for _, name in ipairs(config.order) do
 		local def = config.items[name]
-		if def then list[#list + 1] = { item = name, worn = isWorn(ped, def), parts = readGarment(ped, def) } end
+		if def then list[#list + 1] = { item = name, worn = isWorn(ped, def), parts = readGarment(ped, def), model = model } end
 	end
 
 	return list

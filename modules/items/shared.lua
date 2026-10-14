@@ -25,6 +25,11 @@ end
 ---@param data OxItem
 local function newItem(data)
 	data.weight = data.weight or 0
+
+	-- a label can be translated in locales/*.json as item_<name>
+	local key = 'item_' .. data.name
+	local translated = locale(key)
+	if translated and translated ~= key then data.label = translated end
 	FoodDefaults.apply(data, foodConfig)
 
 	if data.close == nil then

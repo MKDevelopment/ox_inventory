@@ -9,6 +9,7 @@ import Divider from '../utils/Divider';
 import Markdown from '../utils/Markdown';
 import WeightBar from '../utils/WeightBar';
 import { getCategoryLabel, getItemCategory } from '../../helpers/category';
+import { garmentGender, garmentParts, partLabel } from '../../helpers/clothing';
 
 const formatDuration = (seconds: number) => {
   const days = Math.floor(seconds / 86400);
@@ -94,7 +95,8 @@ const SlotTooltip: React.ForwardRefRenderFunction<
               </div>
             ) : (
               <span className="tooltip-category">
-                {item.metadata?.type || getCategoryLabel(getItemCategory(item.name))}
+                {(item.metadata?.type !== 'clothe' && item.metadata?.type) ||
+                  getCategoryLabel(getItemCategory(item.name))}
               </span>
             )}
           </div>
@@ -135,6 +137,26 @@ const SlotTooltip: React.ForwardRefRenderFunction<
                 <p key={label}>
                   <span>{label}</span>
                   <b>{String(value)}</b>
+                </p>
+              ))}
+            </div>
+          )}
+          {garmentParts(item.metadata).length > 0 && (
+            <div className="tooltip-document tooltip-garment">
+              {garmentGender(item.metadata?.model) && (
+                <p>
+                  <span>{Locale.ui_clothing_fits || 'Fits'}</span>
+                  <b>{Locale[`ui_clothing_${garmentGender(item.metadata?.model)}`]}</b>
+                </p>
+              )}
+              {garmentParts(item.metadata).map((part) => (
+                <p key={`${part.category}${part.id}`}>
+                  <span>{partLabel(part)}</span>
+                  <b>
+                    {Locale.ui_clothing_drawable || 'ID'} {part.data.index} · {Locale.ui_clothing_texture || 'Variant'}{' '}
+                    {part.data.texture}
+                    {part.data.collection ? ` · ${part.data.collection}` : ''}
+                  </b>
                 </p>
               ))}
             </div>

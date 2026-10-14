@@ -3,7 +3,7 @@ import { useDrag, useDrop } from 'react-dnd';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { selectLeftInventory, selectRightInventory } from '../../store/inventory';
 import { EquipmentEntry } from '../../store/clothing';
-import { closeTooltip } from '../../store/tooltip';
+import { closeTooltip, openTooltip } from '../../store/tooltip';
 import { Items } from '../../store/items';
 import { Locale } from '../../store/locale';
 import { getItemUrl, isSlotWithItem } from '../../helpers';
@@ -18,9 +18,6 @@ type EquipmentDrag = { item: string; image: string };
 
 export const isWardrobe = (inventory: Inventory) =>
   typeof inventory.id === 'string' && inventory.id.startsWith('wardrobe:');
-
-const describe = (entry: EquipmentEntry) =>
-  entry.parts.map((part) => `${part.category} ${part.id}: ${part.data.index}/${part.data.texture}`).join('\n');
 
 const useGarmentSource = () => {
   const left = useAppSelector(selectLeftInventory);
@@ -40,7 +37,23 @@ const wear = (item: SlotWithItem, fromWardrobe: boolean) => fetchNui('clothingWe
 const EquipmentSlot: React.FC<{ entry: EquipmentEntry }> = ({ entry }) => {
   const dispatch = useAppDispatch();
   const resolve = useGarmentSource();
-  const image = `url(${getItemUrl(entry.item) || 'none'})`;
+  const timer = useRef<number | null>(null);
+
+  // what is worn, shaped like a garment item so the photo and the tooltip work as for carried ones
+  const garment: SlotWithItem = {
+    name: entry.item,
+    slot: 0,
+    count: 1,
+    weight: 0,
+    metadata: { type: 'clothe', data: entry.parts, model: entry.model },
+  };
+  const image = `url(${getItemUrl(entry.worn ? garment : entry.item) || 'none'})`;
+
+  const hideTooltip = () => {
+    if (timer.current) window.clearTimeout(timer.current);
+    timer.current = null;
+    dispatch(closeTooltip());
+  };
 
   const [{ isDragging }, drag] = useDrag<EquipmentDrag, void, { isDragging: boolean }>(
     () => ({
@@ -73,12 +86,16 @@ const EquipmentSlot: React.FC<{ entry: EquipmentEntry }> = ({ entry }) => {
       }}
       className={`equipment-slot${entry.worn ? ' worn' : ''}${isOver && canDrop ? ' over' : ''}${canDrop ? ' accepts' : ''}`}
       style={{ opacity: isDragging ? 0.4 : 1 }}
-      title={entry.worn ? describe(entry) : undefined}
+      onMouseEnter={() => {
+        if (!entry.worn) return;
+        timer.current = window.setTimeout(() => dispatch(openTooltip({ item: garment, inventoryType: 'player' })), 400);
+      }}
+      onMouseLeave={hideTooltip}
+      onMouseDown={hideTooltip}
     >
       <div className="equipment-image" style={{ backgroundImage: image }} />
-      <span className="equipment-label">
-        {entry.worn ? Items[entry.item]?.label || entry.item : Locale.ui_clothing_nothing || 'Nothing'}
-      </span>
+      <span className="equipment-label">{Items[entry.item]?.label || entry.item}</span>
+      {!entry.worn && <span className="equipment-state">{Locale.ui_clothing_nothing || 'Nothing'}</span>}
     </div>
   );
 };

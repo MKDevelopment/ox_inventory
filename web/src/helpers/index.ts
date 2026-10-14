@@ -3,7 +3,8 @@ import { isEqual } from 'lodash-es';
 import { store } from '../store';
 import { Items } from '../store/items';
 import { imageformat, imagepath } from '../store/imagepath';
-import { withImageFallback } from '../store/imageFallback';
+import { imageFailed, withImageFallback } from '../store/imageFallback';
+import { garmentImageUrl } from './clothing';
 import { fetchNui } from '../utils/fetchNui';
 
 export const canPurchaseItem = (item: Slot, inventory: { type: Inventory['type']; groups: Inventory['groups'] }) => {
@@ -161,4 +162,10 @@ const getRawItemUrl = (item: string | SlotWithItem) => {
   return itemData.image;
 };
 
-export const getItemUrl = (item: string | SlotWithItem) => withImageFallback(getRawItemUrl(item));
+// a garment's own photo when it exists, otherwise the item image
+export const getItemUrl = (item: string | SlotWithItem) => {
+  const garment = typeof item === 'object' ? garmentImageUrl(item.metadata) : undefined;
+  if (garment && !imageFailed(garment)) return garment;
+
+  return withImageFallback(getRawItemUrl(item));
+};

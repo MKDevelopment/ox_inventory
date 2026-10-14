@@ -5,6 +5,7 @@ import { Locale } from './store/locale';
 import { setImageFormat, setImagePath } from './store/imagepath';
 import { setupInventory } from './store/inventory';
 import { setClothingEnabled } from './store/clothing';
+import { setClothingImage } from './helpers/clothing';
 import { Inventory } from './typings';
 import { useAppDispatch } from './store';
 import { debugData } from './utils/debugData';
@@ -109,7 +110,8 @@ const App: React.FC = () => {
     imagepath: string;
     imageformat?: string;
     clothing?: boolean;
-  }>('init', ({ locale, items, leftInventory, imagepath, imageformat, clothing }) => {
+    clothingImage?: string;
+  }>('init', ({ locale, items, leftInventory, imagepath, imageformat, clothing, clothingImage }) => {
     for (const name in locale) Locale[name] = locale[name];
     for (const name in items) Items[name] = items[name];
 
@@ -117,6 +119,7 @@ const App: React.FC = () => {
     setImageFormat(imageformat);
     dispatch(setupInventory({ leftInventory }));
     dispatch(setClothingEnabled(!!clothing));
+    setClothingImage(clothingImage);
   });
 
   fetchNui('uiLoaded', {});

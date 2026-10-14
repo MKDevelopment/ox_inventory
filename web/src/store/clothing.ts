@@ -3,16 +3,13 @@ import { fetchNui } from '../utils/fetchNui';
 import { isEnvBrowser } from '../utils/misc';
 import type { AppDispatch } from '.';
 
-export interface GarmentPart {
-  category: 'component' | 'prop';
-  id: number;
-  data: { collection?: string; index: number; texture: number };
-}
+import type { GarmentPart } from '../helpers/clothing';
 
 export interface EquipmentEntry {
   item: string;
   worn: boolean;
   parts: GarmentPart[];
+  model?: number;
 }
 
 interface ClothingState {

@@ -1375,7 +1375,8 @@ RegisterNetEvent('ox_inventory:setPlayerInventory', function(currentDrops, inven
 			},
 			imagepath = client.imagepath,
 			imageformat = client.imageformat,
-			clothing = GetResourceState('tgiann-clothing') == 'started'
+			clothing = GetResourceState('tgiann-clothing') == 'started',
+			clothingImage = (lib.load('data.clothing') or {}).image
 		}
 	})
 
