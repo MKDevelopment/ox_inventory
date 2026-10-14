@@ -276,5 +276,17 @@
   "ui_store_tax_none": "No settled periods yet.",
   "ui_store_tax_settled": "Paid",
   "ui_store_tax_overdue": "Overdue",
-  "ui_store_tax_open": "Open"
+  "ui_store_tax_open": "Open",
+  "meta_cardId": "Card ID",
+  "meta_simNumber": "SIM number",
+  "meta_imei": "IMEI",
+  "meta_plate": "Plate",
+  "meta_lockVersion": "Lock version",
+  "ui_doc_name": "Name",
+  "ui_doc_birth": "Date of birth",
+  "ui_doc_ssn": "SSN",
+  "ui_doc_licenses": "Licences",
+  "ui_doc_grade": "Grade",
+  "ui_doc_badge": "Badge number",
+  "ui_doc_serial": "Serial number"
 }

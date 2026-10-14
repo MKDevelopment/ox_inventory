@@ -8316,7 +8316,7 @@ return {
 		close = true,
 	},
 
-	-- Documents and cards (34)
+	-- Documents and cards (41)
 	['bank_card'] = {
 		label = 'Bank Card',
 		description = 'Used to access ATM',
@@ -8325,6 +8325,15 @@ return {
 		stack = false,
 		close = true,
 		client = { image = 'bank_card.png' },
+	},
+
+	['boat_license'] = {
+		label = 'Boat Licence',
+		description = 'Document issued by the city (vms_documentsv2).',
+		category = 'documents',
+		weight = 5,
+		stack = false,
+		close = true,
 	},
 
 	['certificate'] = {
@@ -8427,6 +8436,15 @@ return {
 		},
 	},
 
+	['driving_license'] = {
+		label = 'Driving Licence',
+		description = 'Document issued by the city (vms_documentsv2).',
+		category = 'documents',
+		weight = 5,
+		stack = false,
+		close = true,
+	},
+
 	['dyno_report'] = {
 		label = 'Dyno Report',
 		description = 'Printed dyno test report',
@@ -8454,6 +8472,24 @@ return {
 		stack = true,
 		close = true,
 		client = { image = 'empty_ticket.png' },
+	},
+
+	['fib_badge'] = {
+		label = 'FIB Badge',
+		description = 'Document issued by the city (vms_documentsv2).',
+		category = 'documents',
+		weight = 5,
+		stack = false,
+		close = true,
+	},
+
+	['flying_license'] = {
+		label = 'Flying Licence',
+		description = 'Document issued by the city (vms_documentsv2).',
+		category = 'documents',
+		weight = 5,
+		stack = false,
+		close = true,
 	},
 
 	['id_card'] = {
@@ -8514,6 +8550,15 @@ return {
 		category = 'documents',
 		weight = 1,
 		stack = true,
+		close = true,
+	},
+
+	['police_badge'] = {
+		label = 'Police Badge',
+		description = 'Document issued by the city (vms_documentsv2).',
+		category = 'documents',
+		weight = 5,
+		stack = false,
 		close = true,
 	},
 
@@ -8579,6 +8624,15 @@ return {
 		client = {
 			image = 'security_card_02.png',
 		},
+	},
+
+	['sheriff_badge'] = {
+		label = 'Sheriff Badge',
+		description = 'Document issued by the city (vms_documentsv2).',
+		category = 'documents',
+		weight = 5,
+		stack = false,
+		close = true,
 	},
 
 	['signed_vehicle_sale_agreement'] = {
@@ -8651,6 +8705,15 @@ return {
 		weight = 100,
 		stack = false,
 		close = false,
+	},
+
+	['weapon_license'] = {
+		label = 'Weapon Licence',
+		description = 'Document issued by the city (vms_documentsv2).',
+		category = 'documents',
+		weight = 5,
+		stack = false,
+		close = true,
 	},
 
 	['weaponlicense'] = {

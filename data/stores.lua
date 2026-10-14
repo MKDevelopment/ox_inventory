@@ -5,6 +5,11 @@ return {
 	-- Shopkeeper interaction: 'auto' (tgiann-target when started, else ox_target), 'ox_target' or 'tgiann-target'.
 	-- Without either, stores fall back to a marker and the E key.
 	target = 'auto',
+	-- Shop licences backed by vms_documentsv2 documents: a valid document is required (instead of the
+	-- ESX licence) and, with requireDocumentItem, the player must carry it (pocket or wallet).
+	licenseDocuments = { weapon = 'weapon_license' },
+	requireDocumentItem = true,
+
 	-- Default ox shops (data/shops.lua) open in this store UI (cart, payment choice) instead of the slot grid.
 	shopsInStoreUi = true,
 

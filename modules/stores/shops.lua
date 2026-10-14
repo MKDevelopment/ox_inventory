@@ -8,6 +8,7 @@ local Payments = require 'modules.stores.payments'
 local Cart = require 'modules.stores.cart'
 local Taxes = require 'modules.stores.taxes'
 
+local storesConfig = lib.load('data.stores') or {}
 local MAX_DISTANCE = 10.0
 local checkoutCooldown = {}
 
@@ -60,10 +61,30 @@ local function getShop(source, shopType, id)
 	return shop, inv, rank
 end
 
+---A licence backed by a vms_documentsv2 document (data/stores.lua licenseDocuments) needs a valid
+---document and, with requireDocumentItem, that document carried (pocket or wallet). Other licences,
+---or a server without vms_documentsv2, use the framework licence.
+---@return boolean
+local function hasLicense(inv, license)
+	local document = storesConfig.licenseDocuments?[license]
+
+	if document and GetResourceState('vms_documentsv2') == 'started' then
+		local vms = exports.vms_documentsv2
+		local ok, serial = pcall(vms.isAnyDocumentValid, vms, inv.owner, document)
+
+		if not ok or not serial then return false end
+		if storesConfig.requireDocumentItem == false then return true end
+
+		return Inventory.GetItemCount(inv, document, { document_id = serial }) > 0
+	end
+
+	return not server.hasLicense or server.hasLicense(inv, license) and true or false
+end
+
 ---Why a shop slot cannot be bought by this player, if it cannot.
 ---@return string?
 local function lockReason(inv, slot, rank)
-	if slot.license and server.hasLicense and not server.hasLicense(inv, slot.license) then return 'license' end
+	if slot.license and not hasLicense(inv, slot.license) then return 'license' end
 	if slot.grade and not hasGrade(slot.grade, rank) then return 'grade' end
 end
 

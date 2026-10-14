@@ -1,6 +1,6 @@
 return {
 	-- Metadata keys shown in the item tooltip, in this order. Labels come from the locale key meta_<key>.
-	display = { 'cash', 'quality', 'producer', 'produced', 'batch', 'note' },
+	display = { 'cash', 'quality', 'producer', 'produced', 'batch', 'note', 'cardId', 'simNumber', 'imei', 'plate', 'lockVersion' },
 
 	-- Players can rename items and attach a note from the context menu.
 	editing = {

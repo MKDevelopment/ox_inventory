@@ -38,6 +38,26 @@ const formatBestBefore = (expiresAt: number) => {
   return `${Locale.ui_best_before || 'Best before'}: ${day} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
+// vms_documentsv2 documents keep their data in metadata (see its item renderer)
+const LICENSE_KEYS = ['drive_a', 'drive_b', 'drive_c', 'practical_plane', 'practical_helicopter', 'practical_boat'];
+
+const documentRows = (metadata: Record<string, any>) => {
+  const licenses = LICENSE_KEYS.map((key) => metadata[key])
+    .filter((value) => typeof value === 'string' && value.trim() !== '')
+    .join(', ');
+  const name = [metadata.firstName, metadata.lastName].filter(Boolean).join(' ');
+
+  return [
+    [Locale.ui_doc_name || 'Name', name],
+    [Locale.ui_doc_birth || 'Date of birth', metadata.dateOfBirth],
+    [Locale.ui_doc_ssn || 'SSN', metadata.ssn],
+    [Locale.ui_doc_licenses || 'Licences', licenses],
+    [Locale.ui_doc_grade || 'Grade', metadata.jobGrade],
+    [Locale.ui_doc_badge || 'Badge number', metadata.badgeNumber],
+    [Locale.ui_doc_serial || 'Serial number', metadata.document_id],
+  ].filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== '' && value !== 'NONE');
+};
+
 const formatWeight = (weight: number) =>
   weight >= 1000 ? `${(weight / 1000).toLocaleString('en-us', { maximumFractionDigits: 2 })}kg` : `${weight}g`;
 
@@ -108,6 +128,16 @@ const SlotTooltip: React.ForwardRefRenderFunction<
             <p className="tooltip-original">
               {Locale.ui_original_name || 'Original name'}: {item.metadata.baseLabel || itemData.label}
             </p>
+          )}
+          {item.metadata?.document_id && (
+            <div className="tooltip-document">
+              {documentRows(item.metadata).map(([label, value]) => (
+                <p key={label}>
+                  <span>{label}</span>
+                  <b>{String(value)}</b>
+                </p>
+              ))}
+            </div>
           )}
           {description && (
             <div className="tooltip-description">

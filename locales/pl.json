@@ -276,5 +276,17 @@
   "ui_store_tax_none": "Brak rozliczonych okresów.",
   "ui_store_tax_settled": "Zapłacony",
   "ui_store_tax_overdue": "Zaległy",
-  "ui_store_tax_open": "Otwarty"
+  "ui_store_tax_open": "Otwarty",
+  "meta_cardId": "ID karty",
+  "meta_simNumber": "Numer SIM",
+  "meta_imei": "IMEI",
+  "meta_plate": "Rejestracja",
+  "meta_lockVersion": "Wersja zamka",
+  "ui_doc_name": "Imię i nazwisko",
+  "ui_doc_birth": "Data urodzenia",
+  "ui_doc_ssn": "PESEL/SSN",
+  "ui_doc_licenses": "Uprawnienia",
+  "ui_doc_grade": "Stopień",
+  "ui_doc_badge": "Nr odznaki",
+  "ui_doc_serial": "Nr seryjny"
 }
