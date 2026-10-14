@@ -15,6 +15,28 @@ return {
 		restaurantdrink = { thirst = 100 },
 	},
 
+	-- Shelf life in minutes for items in these categories that do not set `degrade` themselves.
+	-- The item's tier wins over its category; an item's own `degrade` in data/items.lua wins over both.
+	spoilage = {
+		tiers = {
+			restaurant = 2880,       -- 2 days
+			fastfood = 1440,         -- 1 day
+			snack = 20160,           -- 14 days
+			restaurantdrink = 1440,  -- 1 day
+			hotdrink = 1440,         -- 1 day
+			junkdrink = 43200,       -- 30 days
+		},
+		categories = {
+			food = 4320,             -- 3 days
+			drinks = 43200,          -- 30 days
+			ingredients = 10080,     -- 7 days
+		},
+	},
+
+	-- Metadata every new food, drink and ingredient gets unless the item has its own `template`
+	-- (same format as templates in data/metadata.lua).
+	template = { quality = { 60, 100 }, produced = 'date', batch = 'serial' },
+
 	-- esx_status Config.StatusMax
 	statusMax = 1000000,
 

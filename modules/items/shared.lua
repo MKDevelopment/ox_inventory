@@ -6,6 +6,8 @@ end
 
 local ItemList = {}
 local isServer = IsDuplicityVersion()
+local FoodDefaults = require 'modules.food.defaults'
+local foodConfig = lib.load('data.food') or {}
 
 local function setImagePath(path)
     if path then
@@ -23,6 +25,7 @@ end
 ---@param data OxItem
 local function newItem(data)
 	data.weight = data.weight or 0
+	FoodDefaults.apply(data, foodConfig)
 
 	if data.close == nil then
 		data.close = true

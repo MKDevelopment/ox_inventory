@@ -123,7 +123,7 @@
   "ui_free_slot": "Wolny slot",
   "ui_slots_used": "zajętych slotów",
   "ui_freshness": "Świeżość",
-  "ui_spoils_in": "Zepsuje się za %s",
+  "ui_spoils_in": "Do spożycia: %s",
   "ui_spoiled": "Zepsute",
   "ui_cooled": "W lodówce, psuje się %sx wolniej",
   "metadata_locked": "Tego przedmiotu nie można nazwać ani opisać",
@@ -248,5 +248,6 @@
   "ui_wallet_cash": "Gotówka w portfelu",
   "ui_wallet_deposit": "Włóż",
   "ui_wallet_withdraw": "Wyjmij",
-  "ui_wallet_amount": "Kwota"
+  "ui_wallet_amount": "Kwota",
+  "ui_best_before": "Najlepiej spożyć przed"
 }

@@ -29,6 +29,15 @@ const formatSpoilTime = (expiresAt: number) => {
   return (Locale.ui_spoils_in || 'Spoils in %s').replace('%s', formatDuration(remaining));
 };
 
+const pad = (value: number) => String(value).padStart(2, '0');
+
+const formatBestBefore = (expiresAt: number) => {
+  const date = new Date(expiresAt * 1000);
+  const day = `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}`;
+
+  return `${Locale.ui_best_before || 'Best before'}: ${day} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
 const formatWeight = (weight: number) =>
   weight >= 1000 ? `${(weight / 1000).toLocaleString('en-us', { maximumFractionDigits: 2 })}kg` : `${weight}g`;
 
@@ -115,7 +124,10 @@ const SlotTooltip: React.ForwardRefRenderFunction<
                   </p>
                   <WeightBar percent={item.durability} durability />
                   {item.metadata?.degrade && item.metadata?.durability > 100 && (
-                    <p>{formatSpoilTime(item.metadata.durability)}</p>
+                    <>
+                      <p>{formatBestBefore(item.metadata.durability)}</p>
+                      <p>{formatSpoilTime(item.metadata.durability)}</p>
+                    </>
                   )}
                   {item.metadata?.degrade && item.durability <= 0 && getItemCategory(item.name) === 'food' && (
                     <p className="tooltip-spoiled">{Locale.ui_spoiled_edible || 'Can be eaten, but may poison you'}</p>

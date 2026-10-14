@@ -123,7 +123,7 @@
   "ui_free_slot": "Free slot",
   "ui_slots_used": "slots used",
   "ui_freshness": "Freshness",
-  "ui_spoils_in": "Spoils in %s",
+  "ui_spoils_in": "Eat within %s",
   "ui_spoiled": "Spoiled",
   "ui_cooled": "In a fridge, spoils %sx slower",
   "metadata_locked": "This item can not be renamed or annotated",
@@ -248,5 +248,6 @@
   "ui_wallet_cash": "Cash in wallet",
   "ui_wallet_deposit": "Put in",
   "ui_wallet_withdraw": "Take out",
-  "ui_wallet_amount": "Amount"
+  "ui_wallet_amount": "Amount",
+  "ui_best_before": "Best before"
 }
