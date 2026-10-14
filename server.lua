@@ -3,6 +3,7 @@ if not lib then return end
 require 'modules.bridge.server'
 require 'modules.crafting.server'
 require 'modules.shops.server'
+require 'modules.stores.shops'
 require 'modules.pefcl.server'
 require 'modules.clothing.server'
 require 'modules.sort.server'

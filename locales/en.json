@@ -261,5 +261,7 @@
   "store_card_no_access": "You have no access to the account of this card",
   "store_target_shop": "Shop",
   "store_target_manage": "Manage store",
-  "ui_store_ped": "Shopkeeper model"
+  "ui_store_ped": "Shopkeeper model",
+  "ui_store_needs_license": "Licence required",
+  "ui_store_needs_grade": "Higher rank required"
 }

@@ -261,5 +261,7 @@
   "store_card_no_access": "Nie masz dostępu do konta tej karty",
   "store_target_shop": "Kup",
   "store_target_manage": "Zarządzaj sklepem",
-  "ui_store_ped": "Model sprzedawcy"
+  "ui_store_ped": "Model sprzedawcy",
+  "ui_store_needs_license": "Wymagana licencja",
+  "ui_store_needs_grade": "Wymagana wyższa ranga"
 }

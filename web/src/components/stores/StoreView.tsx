@@ -8,7 +8,17 @@ import { SearchIcon } from '../mystory/icons';
 import StoreManage from './StoreManage';
 import { useImageFallback } from '../../store/imageFallback';
 
-export type StoreProduct = { name: string; price: number; stock: number };
+export type StoreProduct = {
+  name: string;
+  price: number;
+  stock: number;
+  // default ox shops: slot key (an item can be listed twice), item used as currency, why it cannot be bought
+  key?: string;
+  currency?: string;
+  locked?: 'license' | 'grade';
+};
+
+const keyOf = (product: StoreProduct) => product.key || product.name;
 
 export type StoreManagement = {
   cash: number;
@@ -32,6 +42,7 @@ export type StoreData = {
   management?: StoreManagement;
   payments: PaymentOption[];
   tab?: 'manage';
+  shop?: { type: string; id?: number };
 };
 
 export const t = (key: string, fallback: string) => Locale[key] || fallback;
@@ -39,6 +50,9 @@ export const t = (key: string, fallback: string) => Locale[key] || fallback;
 export const money = (value: number) => `$${value.toLocaleString('en-US')}`;
 
 export const itemLabel = (name: string) => Items[name]?.label || name;
+
+const priceText = (product: StoreProduct, amount: number) =>
+  product.currency ? `${amount.toLocaleString('en-US')} ${itemLabel(product.currency)}` : money(amount);
 
 const paymentTitle = (option: PaymentOption) => {
   if (option.kind === 'cash') return t('ui_store_cash', 'Cash');
@@ -87,7 +101,7 @@ const StoreView: React.FC<{ store: StoreData; onUpdate: (store: StoreData) => vo
     return store.products.filter((p) => !query || itemLabel(p.name).toLowerCase().includes(query));
   }, [store.products, search]);
 
-  const stockOf = (name: string) => store.products.find((p) => p.name === name);
+  const stockOf = (key: string) => store.products.find((p) => keyOf(p) === key);
 
   const setCount = (name: string, count: number) => {
     const product = stockOf(name);
@@ -104,10 +118,14 @@ const StoreView: React.FC<{ store: StoreData; onUpdate: (store: StoreData) => vo
     });
   };
 
-  const lines = Object.entries(cart).filter(([name]) => stockOf(name));
-  const total = lines.reduce((sum, [name, count]) => sum + (stockOf(name)?.price || 0) * count, 0);
+  const lines = Object.entries(cart).filter(([key]) => stockOf(key));
+  // lines priced in another item (e.g. black money) are paid with that item, not the chosen payment
+  const total = lines.reduce(
+    (sum, [key, count]) => sum + (stockOf(key)?.currency ? 0 : (stockOf(key)?.price || 0) * count),
+    0
+  );
   const payment = store.payments.find((option) => option.id === paymentId && !option.disabled);
-  const canPay = !!payment && lines.length > 0 && payment.balance >= total;
+  const canPay = lines.length > 0 && (total === 0 || (!!payment && payment.balance >= total));
 
   const pay = async () => {
     if (busy || !canPay) return;
@@ -117,6 +135,7 @@ const StoreView: React.FC<{ store: StoreData; onUpdate: (store: StoreData) => vo
       id: store.id,
       cart: Object.fromEntries(lines),
       payment: paymentId,
+      shop: store.shop,
     });
 
     if (response?.success) setCart({});
@@ -169,25 +188,31 @@ const StoreView: React.FC<{ store: StoreData; onUpdate: (store: StoreData) => vo
             ) : (
               <div className="store-products">
                 {products.map((product) => {
-                  const inCart = cart[product.name] || 0;
+                  const key = keyOf(product);
+                  const inCart = cart[key] || 0;
                   const soldOut = product.stock <= 0;
+                  const unavailable = soldOut || !!product.locked;
 
                   return (
                     <button
-                      key={product.name}
-                      className={`store-product${soldOut ? ' sold-out' : ''}${inCart ? ' in-cart' : ''}`}
-                      disabled={soldOut}
-                      onClick={() => setCount(product.name, inCart + 1)}
+                      key={key}
+                      className={`store-product${unavailable ? ' sold-out' : ''}${inCart ? ' in-cart' : ''}`}
+                      disabled={unavailable}
+                      onClick={() => setCount(key, inCart + 1)}
                     >
                       <img src={getItemUrl(product.name)} alt="" />
                       <span className="store-product-name">{itemLabel(product.name)}</span>
-                      <span className="store-product-price">{money(product.price)}</span>
+                      <span className="store-product-price">{priceText(product, product.price)}</span>
                       <span className="store-product-stock">
-                        {soldOut
-                          ? t('ui_store_sold_out', 'Sold out')
-                          : product.stock >= 9999
-                            ? t('ui_store_unlimited', 'Unlimited')
-                            : `${t('ui_store_stock', 'In stock')}: ${product.stock}`}
+                        {product.locked === 'license'
+                          ? t('ui_store_needs_license', 'Licence required')
+                          : product.locked === 'grade'
+                            ? t('ui_store_needs_grade', 'Higher rank required')
+                            : soldOut
+                              ? t('ui_store_sold_out', 'Sold out')
+                              : product.stock >= 9999
+                                ? t('ui_store_unlimited', 'Unlimited')
+                                : `${t('ui_store_stock', 'In stock')}: ${product.stock}`}
                       </span>
                       {inCart > 0 && <span className="store-product-badge">{inCart}</span>}
                     </button>
@@ -206,26 +231,31 @@ const StoreView: React.FC<{ store: StoreData; onUpdate: (store: StoreData) => vo
             <p className="store-cart-empty">{t('ui_store_empty_cart', 'Add products to your cart to buy them.')}</p>
           ) : (
             <ul className="store-cart-lines">
-              {lines.map(([name, count]) => (
-                <li key={name}>
-                  <img src={getItemUrl(name)} alt="" />
-                  <div>
-                    <p>{itemLabel(name)}</p>
-                    <span>
-                      {count} × {money(stockOf(name)?.price || 0)} = <b>{money((stockOf(name)?.price || 0) * count)}</b>
-                    </span>
-                  </div>
-                  <div className="store-stepper">
-                    <button onClick={() => setCount(name, count - 1)}>−</button>
-                    <input
-                      type="text"
-                      value={count}
-                      onChange={(event) => setCount(name, parseInt(event.target.value.replace(/\D/g, ''), 10) || 0)}
-                    />
-                    <button onClick={() => setCount(name, count + 1)}>+</button>
-                  </div>
-                </li>
-              ))}
+              {lines.map(([key, count]) => {
+                const product = stockOf(key) as StoreProduct;
+
+                return (
+                  <li key={key}>
+                    <img src={getItemUrl(product.name)} alt="" />
+                    <div>
+                      <p>{itemLabel(product.name)}</p>
+                      <span>
+                        {count} × {priceText(product, product.price)} ={' '}
+                        <b>{priceText(product, product.price * count)}</b>
+                      </span>
+                    </div>
+                    <div className="store-stepper">
+                      <button onClick={() => setCount(key, count - 1)}>−</button>
+                      <input
+                        type="text"
+                        value={count}
+                        onChange={(event) => setCount(key, parseInt(event.target.value.replace(/\D/g, ''), 10) || 0)}
+                      />
+                      <button onClick={() => setCount(key, count + 1)}>+</button>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
           <div className="store-cart-footer">

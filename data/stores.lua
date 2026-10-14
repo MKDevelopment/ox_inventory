@@ -5,6 +5,9 @@ return {
 	-- Shopkeeper interaction: 'auto' (tgiann-target when started, else ox_target), 'ox_target' or 'tgiann-target'.
 	-- Without either, stores fall back to a marker and the E key.
 	target = 'auto',
+	-- Default ox shops (data/shops.lua) open in this store UI (cart, payment choice) instead of the slot grid.
+	shopsInStoreUi = true,
+
 	-- Ped used when a store has no model of its own (set per store in /stores).
 	defaultPed = { model = 'mp_m_shopkeep_01', scenario = 'WORLD_HUMAN_STAND_IMPATIENT' },
 	adminAce = 'group.admin',

@@ -50,6 +50,26 @@ local function openStore(id, tab)
 	SendNUIMessage({ action = 'openStore', data = data })
 end
 
+-- default ox shops (data/shops.lua) open here instead of the slot grid
+client.shopsInStoreUi = config.shopsInStoreUi ~= false
+
+---@param shopType string
+---@param id? number
+local function openShopStore(shopType, id)
+	if storeOpen or not PlayerData.loaded or PlayerData.dead or LocalPlayer.state.invBusy then return end
+
+	client.closeInventory()
+
+	local data = lib.callback.await('ox_inventory:openShopStore', false, shopType, id)
+	if not data then return lib.notify({ type = 'error', description = locale('store_too_far') }) end
+
+	storeOpen = true
+	SetNuiFocus(true, true)
+	SendNUIMessage({ action = 'openStore', data = data })
+end
+
+AddEventHandler('ox_inventory:openShopStore', openShopStore)
+
 ---Spawns the shopkeeper when the player comes close (local entity, nothing networked).
 ---@param point CPoint
 local function spawnPed(point)
@@ -191,7 +211,14 @@ RegisterNUICallback('storeClose', function(_, cb)
 end)
 
 RegisterNUICallback('storeCheckout', function(data, cb)
-	local success, result = lib.callback.await('ox_inventory:checkoutStore', false, data.id, data.cart, data.payment)
+	local shop = data.shop
+	local success, result
+
+	if shop then
+		success, result = lib.callback.await('ox_inventory:checkoutShop', false, shop.type, shop.id, data.cart, data.payment)
+	else
+		success, result = lib.callback.await('ox_inventory:checkoutStore', false, data.id, data.cart, data.payment)
+	end
 
 	if success then
 		lib.notify({ type = 'success', description = locale('store_paid', result) })
@@ -199,7 +226,11 @@ RegisterNUICallback('storeCheckout', function(data, cb)
 		lib.notify({ type = 'error', description = locale(result) })
 	end
 
-	cb({ success = success, store = lib.callback.await('ox_inventory:openStore', false, data.id) })
+	cb({
+		success = success,
+		store = shop and lib.callback.await('ox_inventory:openShopStore', false, shop.type, shop.id)
+			or lib.callback.await('ox_inventory:openStore', false, data.id),
+	})
 end)
 
 RegisterNUICallback('storeManage', function(data, cb)

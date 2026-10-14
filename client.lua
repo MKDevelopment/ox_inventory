@@ -205,6 +205,11 @@ function client.openInventory(inv, data)
             return lib.notify({ id = 'cannot_perform', type = 'error', description = locale('cannot_perform') })
         end
 
+        -- default shops open in the MyStory store UI (cart and payment choice), see modules/stores
+        if client.shopsInStoreUi then
+            return TriggerEvent('ox_inventory:openShopStore', data?.type, data?.id)
+        end
+
         left, right, accessError = lib.callback.await('ox_inventory:openShop', 200, data)
     elseif inv == 'crafting' then
         if cache.vehicle then
