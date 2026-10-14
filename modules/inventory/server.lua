@@ -490,6 +490,31 @@ CreateThread(function()
     TriggerEvent('ox_inventory:loadInventory', Inventory)
 end)
 
+-- slots 1-5 are the hotbar; new items fill a player's main grid first and only use the hotbar
+-- once the grid is full (moving items there is the player's choice)
+local HOTBAR_SLOTS = 5
+local slotOrders = {}
+
+---Slot numbers in the order free slots are taken.
+---@param inv OxInventory
+---@return integer[]
+local function getSlotOrder(inv)
+	local key = inv.player and -inv.slots or inv.slots
+	local order = slotOrders[key]
+
+	if not order then
+		order = {}
+		local first = (inv.player and inv.slots > HOTBAR_SLOTS) and HOTBAR_SLOTS + 1 or 1
+
+		for i = first, inv.slots do order[#order + 1] = i end
+		for i = 1, first - 1 do order[#order + 1] = i end
+
+		slotOrders[key] = order
+	end
+
+	return order
+end
+
 ---@param inv inventory
 function Inventory.GetAccountItemCounts(inv)
     local inventory = Inventory(inv)
@@ -1225,7 +1250,7 @@ function Inventory.AddItem(inv, item, count, metadata, slot, cb)
 		local items = inv.items
 		slotMetadata, slotCount = Items.Metadata(inv.id, item, metadata and table.clone(metadata) or {}, count)
 
-		for i = 1, inv.slots do
+		for _, i in ipairs(getSlotOrder(inv)) do
 			local slotData = items[i]
 
 			if item.stack and slotData ~= nil and slotData.name == item.name and table.matches(slotData.metadata, slotMetadata) then
@@ -2290,7 +2315,7 @@ function Inventory.GetEmptySlot(inv)
 
 	local items = inventory.items
 
-	for i = 1, inventory.slots do
+	for _, i in ipairs(getSlotOrder(inventory)) do
 		if not items[i] then
 			return i
 		end
@@ -2312,7 +2337,7 @@ function Inventory.GetSlotForItem(inv, itemName, metadata)
 	local items = inventory.items
 	local emptySlot
 
-	for i = 1, inventory.slots do
+	for _, i in ipairs(getSlotOrder(inventory)) do
 		local slotData = items[i]
 
 		if not slotData and not emptySlot then
