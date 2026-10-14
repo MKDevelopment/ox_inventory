@@ -91,8 +91,13 @@ Item format (unchanged, as tgiann-clothing writes it):
   for a category the player is actually wearing.
 - Removed: `clothing_*` items and the old `modules/clothing` logic built on them.
 
-**Open choice (see review question):** whether wearing keeps the item (as ms_inventory does now) or
-moves it onto the body (item removed, the garment it replaces comes back as an item).
+- Wearing moves the garment onto the body: the server removes the used item and gives back what
+  was worn in the same places as `c_*` items (one per category, built from the ped's current parts
+  that the client reports and the server validates). A garment exists once: in an inventory or on
+  the ped. Swapping a whole `clothe_set` returns one item per replaced category. Nothing is returned
+  for categories that were "nothing worn".
+- Order: server removes the item and gives the old parts first; only on success does the client
+  apply the new parts and `SaveSkin`, so a failed call never leaves a duplicate.
 
 ## Error handling
 
@@ -105,7 +110,7 @@ moves it onto the body (item removed, the garment it replaces comes back as an i
 - Lua mock tests: tax rate lookup and included-tax maths (33% of 133 = 33), unowned budget transfer,
   owned period accrual and settlement with short till and arrears, withdrawal limit; document licence
   check (valid serial + item in wallet, wrong serial, no VMS fallback); clothing part validation,
-  take-off item metadata, swap behaviour per the open choice.
+  take-off item metadata, wear swap (item removed, replaced garments returned, nothing returned for empty slots).
 - Build, oxfmt, Lua syntax, client-file manifest check (every client `require` is shipped).
 - Playwright: tooltip of an ID card and a driving licence; Taxes tab.
 
