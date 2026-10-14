@@ -81,23 +81,25 @@ const PlayerPanel: React.FC = () => {
 
       <div className="player-panel-body">
         <nav className="folder-rail">
-          {(['all', ...CATEGORIES] as Folder[]).map((key) => {
-            const stats = folders[key];
-            const empty = key !== 'all' && !stats;
+          {(['all', ...CATEGORIES] as Folder[])
+            .filter((key) => key === 'all' || key === folder || folders[key])
+            .map((key) => {
+              const stats = folders[key];
+              const empty = key !== 'all' && !stats;
 
-            return (
-              <button
-                key={key}
-                className={`folder${folder === key ? ' active' : ''}${empty ? ' empty' : ''}`}
-                onClick={() => setFolder(key)}
-                title={getCategoryLabel(key)}
-              >
-                <CategoryIcon category={key} />
-                <span className="folder-name">{getCategoryLabel(key)}</span>
-                {stats && stats.count > 0 && <span className="folder-count">{stats.count}</span>}
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={key}
+                  className={`folder${folder === key ? ' active' : ''}${empty ? ' empty' : ''}`}
+                  onClick={() => setFolder(key)}
+                  title={getCategoryLabel(key)}
+                >
+                  <CategoryIcon category={key} />
+                  <span className="folder-name">{getCategoryLabel(key)}</span>
+                  {stats && stats.count > 0 && <span className="folder-count">{stats.count}</span>}
+                </button>
+              );
+            })}
         </nav>
 
         <div className="player-panel-content">

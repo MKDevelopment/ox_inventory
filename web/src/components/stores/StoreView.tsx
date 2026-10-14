@@ -6,6 +6,7 @@ import { getItemUrl } from '../../helpers';
 import { fetchNui } from '../../utils/fetchNui';
 import { SearchIcon } from '../mystory/icons';
 import StoreManage from './StoreManage';
+import { useImageFallback } from '../../store/imageFallback';
 
 export type StoreProduct = { name: string; price: number; stock: number };
 
@@ -30,6 +31,7 @@ export const money = (value: number) => `$${value.toLocaleString('en-US')}`;
 export const itemLabel = (name: string) => Items[name]?.label || name;
 
 const StoreView: React.FC<{ store: StoreData; onUpdate: (store: StoreData) => void }> = ({ store, onUpdate }) => {
+  useImageFallback();
   const [tab, setTab] = useState<'shop' | 'manage'>('shop');
   const [cart, setCart] = useState<Record<string, number>>({});
   const [method, setMethod] = useState(store.methods[0] || 'cash');

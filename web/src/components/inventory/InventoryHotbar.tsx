@@ -7,8 +7,10 @@ import { useAppSelector } from '../../store';
 import { selectLeftInventory } from '../../store/inventory';
 import { SlotWithItem } from '../../typings';
 import SlideUp from '../utils/transitions/SlideUp';
+import { useImageFallback } from '../../store/imageFallback';
 
 const InventoryHotbar: React.FC = () => {
+  useImageFallback();
   const [hotbarVisible, setHotbarVisible] = useState(false);
   const leftInventory = useAppSelector(selectLeftInventory);
   const items = leftInventory.items.slice(0, 5);

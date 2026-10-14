@@ -6,7 +6,11 @@ local Items = require 'modules.items.server'
 -- slots 1-5 are the hotbar and are never moved
 local FIRST_SLOT = 6
 
-local categoryOrder = { weapons = 1, food = 2, medical = 3, clothing = 4, tools = 5, documents = 6, other = 7 }
+local categoryOrder = {}
+
+for index, name in ipairs({ 'weapons', 'food', 'drinks', 'ingredients', 'medical', 'drugs', 'vehicle', 'tools', 'documents', 'valuables', 'materials', 'clothing', 'other' }) do
+	categoryOrder[name] = index
+end
 
 ---@param slot SlotWithItem
 ---@return string

@@ -3,6 +3,7 @@ import { isEqual } from 'lodash-es';
 import { store } from '../store';
 import { Items } from '../store/items';
 import { imageformat, imagepath } from '../store/imagepath';
+import { withImageFallback } from '../store/imageFallback';
 import { fetchNui } from '../utils/fetchNui';
 
 export const canPurchaseItem = (item: Slot, inventory: { type: Inventory['type']; groups: Inventory['groups'] }) => {
@@ -137,7 +138,7 @@ export const getItemData = async (itemName: string) => {
   }
 };
 
-export const getItemUrl = (item: string | SlotWithItem) => {
+const getRawItemUrl = (item: string | SlotWithItem) => {
   const isObj = typeof item === 'object';
 
   if (isObj) {
@@ -159,3 +160,5 @@ export const getItemUrl = (item: string | SlotWithItem) => {
 
   return itemData.image;
 };
+
+export const getItemUrl = (item: string | SlotWithItem) => withImageFallback(getRawItemUrl(item));

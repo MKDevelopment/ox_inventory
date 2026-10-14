@@ -1,7 +1,21 @@
 import { Items } from '../store/items';
 import { Locale } from '../store/locale';
 
-export const CATEGORIES = ['weapons', 'food', 'medical', 'clothing', 'tools', 'documents', 'other'] as const;
+export const CATEGORIES = [
+  'weapons',
+  'food',
+  'drinks',
+  'ingredients',
+  'medical',
+  'drugs',
+  'vehicle',
+  'tools',
+  'documents',
+  'valuables',
+  'materials',
+  'clothing',
+  'other',
+] as const;
 
 export type ItemCategory = (typeof CATEGORIES)[number];
 
@@ -9,10 +23,16 @@ const FALLBACK_LABELS: Record<ItemCategory | 'all', string> = {
   all: 'All',
   weapons: 'Weapons',
   food: 'Food',
+  drinks: 'Drinks',
+  ingredients: 'Ingredients',
   medical: 'Medical',
-  clothing: 'Clothing',
+  drugs: 'Drugs',
+  vehicle: 'Vehicle',
   tools: 'Tools',
   documents: 'Documents',
+  valuables: 'Valuables',
+  materials: 'Materials',
+  clothing: 'Clothing',
   other: 'Other',
 };
 

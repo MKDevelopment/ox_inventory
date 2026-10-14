@@ -232,5 +232,11 @@
   "store_log_delete_text": "%s usunął/usunęła sklep #%s %s (w kasie $%s)",
   "ui_ground": "Ziemia",
   "ui_glovebox": "Schowek",
-  "ui_trunk": "Bagażnik"
+  "ui_trunk": "Bagażnik",
+  "ui_category_drinks": "Napoje",
+  "ui_category_ingredients": "Składniki",
+  "ui_category_drugs": "Narkotyki",
+  "ui_category_vehicle": "Pojazd",
+  "ui_category_valuables": "Kosztowności",
+  "ui_category_materials": "Materiały"
 }

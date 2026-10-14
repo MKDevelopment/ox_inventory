@@ -5,10 +5,12 @@ import { fetchNui } from '../../utils/fetchNui';
 import { SearchIcon } from '../mystory/icons';
 import { StoreData, StoreManagement, itemLabel, money, t } from './StoreView';
 import StoreHistory from './StoreHistory';
+import { useImageFallback } from '../../store/imageFallback';
 
 type Props = { store: StoreData; management: StoreManagement; onUpdate: (store: StoreData) => void };
 
 const StoreManage: React.FC<Props> = ({ store, management, onUpdate }) => {
+  useImageFallback();
   const [prices, setPrices] = useState<Record<string, string>>({});
   const [adding, setAdding] = useState('');
   const [view, setView] = useState<'products' | 'history'>('products');

@@ -15,6 +15,7 @@ import { ItemsPayload } from '../../reducers/refreshSlots';
 import { closeTooltip, openTooltip } from '../../store/tooltip';
 import { openContextMenu } from '../../store/contextMenu';
 import { useMergeRefs } from '@floating-ui/react';
+import { useImageFallback } from '../../store/imageFallback';
 
 interface SlotProps {
   inventoryId: Inventory['id'];
@@ -28,6 +29,7 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
   { item, inventoryId, inventoryType, inventoryGroups, dimmed },
   ref
 ) => {
+  useImageFallback();
   const manager = useDragDropManager();
   const dispatch = useAppDispatch();
   const timerRef = useRef<number | null>(null);

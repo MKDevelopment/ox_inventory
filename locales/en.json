@@ -232,5 +232,11 @@
   "store_log_delete_text": "%s deleted store #%s %s ($%s in the till)",
   "ui_ground": "Ground",
   "ui_glovebox": "Glovebox",
-  "ui_trunk": "Trunk"
+  "ui_trunk": "Trunk",
+  "ui_category_drinks": "Drinks",
+  "ui_category_ingredients": "Ingredients",
+  "ui_category_drugs": "Drugs",
+  "ui_category_vehicle": "Vehicle",
+  "ui_category_valuables": "Valuables",
+  "ui_category_materials": "Materials"
 }
