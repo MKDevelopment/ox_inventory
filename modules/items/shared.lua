@@ -6,7 +6,7 @@ end
 
 local ItemList = {}
 local isServer = IsDuplicityVersion()
-local FoodDefaults = require 'modules.food.defaults'
+local FoodDefaults = require 'modules.food.shared'
 local foodConfig = lib.load('data.food') or {}
 
 local function setImagePath(path)
