@@ -2,7 +2,7 @@ import { Inventory, InventoryType, ItemData, Slot, SlotWithItem, State } from '.
 import { isEqual } from 'lodash-es';
 import { store } from '../store';
 import { Items } from '../store/items';
-import { imagepath } from '../store/imagepath';
+import { imageformat, imagepath } from '../store/imagepath';
 import { fetchNui } from '../utils/fetchNui';
 
 export const canPurchaseItem = (item: Slot, inventory: { type: Inventory['type']; groups: Inventory['groups'] }) => {
@@ -145,18 +145,17 @@ export const getItemUrl = (item: string | SlotWithItem) => {
 
     const metadata = item.metadata;
 
-    // @todo validate urls and support webp
     if (metadata?.imageurl) return `${metadata.imageurl}`;
-    if (metadata?.image) return `${imagepath}/${metadata.image}.png`;
+    if (metadata?.image) return `${imagepath}/${metadata.image}.${imageformat}`;
   }
 
   const itemName = isObj ? (item.name as string) : item;
   const itemData = Items[itemName];
 
-  if (!itemData) return `${imagepath}/${itemName}.png`;
+  if (!itemData) return `${imagepath}/${itemName}.${imageformat}`;
   if (itemData.image) return itemData.image;
 
-  itemData.image = `${imagepath}/${itemName}.png`;
+  itemData.image = `${imagepath}/${itemName}.${imageformat}`;
 
   return itemData.image;
 };

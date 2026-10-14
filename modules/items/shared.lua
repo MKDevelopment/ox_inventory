@@ -9,7 +9,14 @@ local isServer = IsDuplicityVersion()
 
 local function setImagePath(path)
     if path then
-        return path:match('^[%w]+://') and path or ('%s/%s'):format(client.imagepath, path)
+        if path:match('^[%w]+://') then return path end
+
+        -- images named in data/items.lua (e.g. card_bank.png) follow inventory:imageformat
+        if client.imageformat ~= 'png' then
+            path = path:gsub('%.png$', '.' .. client.imageformat)
+        end
+
+        return ('%s/%s'):format(client.imagepath, path)
     end
 end
 

@@ -98,6 +98,8 @@ else
         itemnotify = GetConvarBool('inventory:itemnotify', true),
         weaponnotify = GetConvarBool('inventory:weaponnotify', true),
         imagepath = GetConvar('inventory:imagepath', ('https://cfx-nui-%s/web/images'):format(GetCurrentResourceName())),
+        -- extension of the item images in imagepath, e.g. webp when images come from a separate resource
+        imageformat = GetConvar('inventory:imageformat', 'png'),
         dropprops = GetConvarBool('inventory:dropprops', false),
         dropmodel = joaat(GetConvar('inventory:dropmodel', 'prop_med_bag_01b')),
         weaponmismatch = GetConvarBool('inventory:weaponmismatch', true),
