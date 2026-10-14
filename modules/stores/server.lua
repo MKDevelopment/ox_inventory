@@ -96,6 +96,13 @@ MySQL.ready(function()
 		)
 	]])
 
+	-- shopkeeper ped (added after the first release)
+	for column, definition in pairs({ ped_model = 'VARCHAR(64) NULL DEFAULT NULL', heading = 'FLOAT NOT NULL DEFAULT 0' }) do
+		if not MySQL.scalar.await('SHOW COLUMNS FROM `mystory_stores` LIKE ?', { column }) then
+			MySQL.query.await(('ALTER TABLE `mystory_stores` ADD COLUMN `%s` %s'):format(column, definition))
+		end
+	end
+
 	if (config.salesRetentionDays or 90) > 0 then
 		MySQL.update.await('DELETE FROM `mystory_store_sales` WHERE `created_at` < NOW() - INTERVAL ? DAY', { config.salesRetentionDays or 90 })
 	end
@@ -113,6 +120,8 @@ MySQL.ready(function()
 			job = row.job,
 			grade = row.grade,
 			cash = row.cash,
+			ped = row.ped_model,
+			heading = row.heading or 0.0,
 			items = {},
 		}
 	end
@@ -132,21 +141,6 @@ MySQL.ready(function()
 	end
 
 	TriggerClientEvent('ox_inventory:storesUpdated', -1)
-end)
-
----Public data sent to every client to place markers and blips.
-local function getPoints()
-	local points = {}
-
-	for id, store in pairs(Stores) do
-		points[#points + 1] = { id = id, label = store.label, coords = store.coords, blip = store.blip }
-	end
-
-	return points
-end
-
-lib.callback.register('ox_inventory:getStores', function()
-	return getPoints()
 end)
 
 local function broadcastPoints()
@@ -176,6 +170,28 @@ local function canManage(source, store)
 
 	return false
 end
+
+---Store positions, peds and blips for one player (with whether they may manage each store).
+---@param source number
+local function getPoints(source)
+	local points = {}
+
+	for id, store in pairs(Stores) do
+		points[#points + 1] = {
+			id = id,
+			label = store.label,
+			coords = store.coords,
+			heading = store.heading,
+			ped = store.ped,
+			blip = store.blip,
+			manage = canManage(source, store) and (store.owner ~= nil or store.job ~= nil or isAdmin(source)),
+		}
+	end
+
+	return points
+end
+
+lib.callback.register('ox_inventory:getStores', getPoints)
 
 ---@param source number
 ---@param store Store
@@ -459,8 +475,11 @@ local function readStoreFields(source, data)
 		owner = ownerInv.owner
 	end
 
+	local ped = type(data.ped) == 'string' and data.ped:match('^[%w_]+$') and data.ped:sub(1, 64) or nil
+
 	return {
 		label = label,
+		ped = ped,
 		type = data.type == 'infinite' and 'infinite' or 'stock',
 		blip = toInt(data.blip),
 		owner = owner,
@@ -488,6 +507,7 @@ lib.callback.register('ox_inventory:adminStores', function(source, action, data)
 				job = store.job,
 				grade = store.grade,
 				blip = store.blip,
+				ped = store.ped,
 				cash = store.cash,
 				items = count,
 				distance = #(GetEntityCoords(GetPlayerPed(source)) - store.coords),
@@ -500,9 +520,10 @@ lib.callback.register('ox_inventory:adminStores', function(source, action, data)
 		local fields = readStoreFields(source, data)
 		if not fields then return false end
 
-		local coords = GetEntityCoords(GetPlayerPed(source))
-		local id = MySQL.insert.await('INSERT INTO `mystory_stores` (`label`, `type`, `coords`, `blip`, `owner`, `job`, `grade`) VALUES (?, ?, ?, ?, ?, ?, ?)', {
-			fields.label, fields.type, json.encode({ x = coords.x, y = coords.y, z = coords.z }), fields.blip, fields.owner, fields.job, fields.grade,
+		local ped = GetPlayerPed(source)
+		local coords, heading = GetEntityCoords(ped), GetEntityHeading(ped)
+		local id = MySQL.insert.await('INSERT INTO `mystory_stores` (`label`, `type`, `coords`, `blip`, `owner`, `job`, `grade`, `ped_model`, `heading`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', {
+			fields.label, fields.type, json.encode({ x = coords.x, y = coords.y, z = coords.z }), fields.blip, fields.owner, fields.job, fields.grade, fields.ped, heading,
 		})
 
 		if not id then return false end
@@ -516,6 +537,8 @@ lib.callback.register('ox_inventory:adminStores', function(source, action, data)
 			owner = fields.owner,
 			job = fields.job,
 			grade = fields.grade,
+			ped = fields.ped,
+			heading = heading,
 			cash = 0,
 			items = {},
 		}
@@ -545,16 +568,18 @@ lib.callback.register('ox_inventory:adminStores', function(source, action, data)
 			exports.ox_inventory:RegisterStash(STOCK_PREFIX .. store.id, locale('store_stock_label', store.label), config.stockSlots or 60, config.stockWeight or 500000, nil, nil, store.coords)
 		end
 
-		MySQL.update('UPDATE `mystory_stores` SET `label` = ?, `type` = ?, `blip` = ?, `owner` = ?, `job` = ?, `grade` = ? WHERE `id` = ?', {
-			store.label, store.type, store.blip, store.owner, store.job, store.grade, store.id,
+		MySQL.update('UPDATE `mystory_stores` SET `label` = ?, `type` = ?, `blip` = ?, `owner` = ?, `job` = ?, `grade` = ?, `ped_model` = ? WHERE `id` = ?', {
+			store.label, store.type, store.blip, store.owner, store.job, store.grade, store.ped, store.id,
 		})
 
 		broadcastPoints()
 		discordLog(locale('store_log_update'), locale('store_log_update_text', describePlayer(source), store.id, store.label, store.type, store.job or '-', store.grade, store.owner or '-'))
 		return true
 	elseif action == 'move' then
-		store.coords = GetEntityCoords(GetPlayerPed(source))
-		MySQL.update('UPDATE `mystory_stores` SET `coords` = ? WHERE `id` = ?', { json.encode({ x = store.coords.x, y = store.coords.y, z = store.coords.z }), store.id })
+		-- the shopkeeper stands where the admin stands, facing the same way
+		local ped = GetPlayerPed(source)
+		store.coords, store.heading = GetEntityCoords(ped), GetEntityHeading(ped)
+		MySQL.update('UPDATE `mystory_stores` SET `coords` = ?, `heading` = ? WHERE `id` = ?', { json.encode({ x = store.coords.x, y = store.coords.y, z = store.coords.z }), store.heading, store.id })
 
 		if store.type == 'stock' then
 			exports.ox_inventory:RegisterStash(STOCK_PREFIX .. store.id, locale('store_stock_label', store.label), config.stockSlots or 60, config.stockWeight or 500000, nil, nil, store.coords)

@@ -1,6 +1,12 @@
 -- Player/job-run stores with a stock room and a cart. Admins manage them in game with /stores (see `command`).
 return {
 	command = 'stores',
+
+	-- Shopkeeper interaction: 'auto' (tgiann-target when started, else ox_target), 'ox_target' or 'tgiann-target'.
+	-- Without either, stores fall back to a marker and the E key.
+	target = 'auto',
+	-- Ped used when a store has no model of its own (set per store in /stores).
+	defaultPed = { model = 'mp_m_shopkeep_01', scenario = 'WORLD_HUMAN_STAND_IMPATIENT' },
 	adminAce = 'group.admin',
 
 	-- Payment options offered at checkout, built from what the player carries:

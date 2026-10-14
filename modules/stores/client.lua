@@ -1,11 +1,25 @@
 if not lib then return end
 
 local config = lib.load('data.stores') or {}
+local Target = require 'modules.target.client'
+local Utils = require 'modules.utils.client'
 local points, blips = {}, {}
 local storeOpen = false
 
+---@param point CPoint
+local function removePed(point)
+	if not point.entity then return end
+
+	Target.removeLocalEntity(point.entity)
+	Utils.DeleteEntity(point.entity)
+	point.entity = nil
+end
+
 local function clearPoints()
-	for _, point in pairs(points) do point:remove() end
+	for _, point in pairs(points) do
+		removePed(point)
+		point:remove()
+	end
 	for _, blip in pairs(blips) do RemoveBlip(blip) end
 
 	table.wipe(points)
@@ -21,7 +35,8 @@ local function closeStoreUi()
 end
 
 ---@param id number
-local function openStore(id)
+---@param tab? 'manage'
+local function openStore(id, tab)
 	if storeOpen or not PlayerData.loaded or PlayerData.dead or LocalPlayer.state.invBusy then return end
 
 	client.closeInventory()
@@ -29,9 +44,54 @@ local function openStore(id)
 	local data = lib.callback.await('ox_inventory:openStore', false, id)
 	if not data then return end
 
+	data.tab = tab
 	storeOpen = true
 	SetNuiFocus(true, true)
 	SendNUIMessage({ action = 'openStore', data = data })
+end
+
+---Spawns the shopkeeper when the player comes close (local entity, nothing networked).
+---@param point CPoint
+local function spawnPed(point)
+	if point.entity then return end
+
+	local pedConfig = config.defaultPed or {}
+	local model = lib.requestModel(point.store.ped or pedConfig.model or 'mp_m_shopkeep_01')
+	if not model then return end
+
+	local coords = point.coords
+	local entity = CreatePed(0, model, coords.x, coords.y, coords.z - 1.0, point.store.heading or 0.0, false, true)
+
+	SetModelAsNoLongerNeeded(model)
+	FreezeEntityPosition(entity, true)
+	SetEntityInvincible(entity, true)
+	SetBlockingOfNonTemporaryEvents(entity, true)
+
+	if pedConfig.scenario then TaskStartScenarioInPlace(entity, pedConfig.scenario, 0, true) end
+
+	local store = point.store
+	local options = {
+		{
+			name = 'mystory_store_shop',
+			icon = 'fas fa-shopping-basket',
+			label = locale('store_target_shop'),
+			distance = 2.5,
+			onSelect = function() openStore(store.id) end,
+		},
+	}
+
+	if store.manage then
+		options[2] = {
+			name = 'mystory_store_manage',
+			icon = 'fas fa-clipboard-list',
+			label = locale('store_target_manage'),
+			distance = 2.5,
+			onSelect = function() openStore(store.id, 'manage') end,
+		}
+	end
+
+	Target.addLocalEntity(entity, options)
+	point.entity = entity
 end
 
 local function createPoints()
@@ -57,6 +117,18 @@ local function createPoints()
 			EndTextCommandSetBlipName(blip)
 
 			blips[#blips + 1] = blip
+		end
+
+		if Target.available() then
+			points[#points + 1] = lib.points.new({
+				coords = coords,
+				distance = 40,
+				store = store,
+				onEnter = spawnPed,
+				onExit = removePed,
+			})
+
+			goto continue
 		end
 
 		points[#points + 1] = lib.points.new({
@@ -87,6 +159,8 @@ local function createPoints()
 				end
 			end,
 		})
+
+		::continue::
 	end
 end
 
@@ -94,6 +168,13 @@ RegisterNetEvent('ox_inventory:storesUpdated', function()
 	if source == '' then return end
 	if PlayerData.loaded then createPoints() end
 end)
+
+-- the Manage option depends on the player's jobs
+for _, key in ipairs(shared.esxjobs or { 'job' }) do
+	RegisterNetEvent(('esx:set%s'):format(key:gsub('^%l', string.upper)), function()
+		if PlayerData.loaded then SetTimeout(500, createPoints) end
+	end)
+end
 
 CreateThread(function()
 	while not PlayerData.loaded do Wait(500) end

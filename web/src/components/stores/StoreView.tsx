@@ -31,6 +31,7 @@ export type StoreData = {
   products: StoreProduct[];
   management?: StoreManagement;
   payments: PaymentOption[];
+  tab?: 'manage';
 };
 
 export const t = (key: string, fallback: string) => Locale[key] || fallback;
@@ -73,7 +74,7 @@ const PaymentTile: React.FC<{ option: PaymentOption; active: boolean; short: boo
 
 const StoreView: React.FC<{ store: StoreData; onUpdate: (store: StoreData) => void }> = ({ store, onUpdate }) => {
   useImageFallback();
-  const [tab, setTab] = useState<'shop' | 'manage'>('shop');
+  const [tab, setTab] = useState<'shop' | 'manage'>(store.tab === 'manage' && store.management ? 'manage' : 'shop');
   const [cart, setCart] = useState<Record<string, number>>({});
   const [paymentId, setPaymentId] = useState<string | undefined>(
     () => store.payments.find((option) => !option.disabled)?.id

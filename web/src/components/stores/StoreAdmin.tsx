@@ -11,6 +11,7 @@ export type AdminStore = {
   job?: string;
   grade: number;
   blip?: number;
+  ped?: string;
   cash: number;
   items: number;
   distance: number;
@@ -24,9 +25,10 @@ type Form = {
   grade: string;
   ownerId: string;
   blip: string;
+  ped: string;
 };
 
-const emptyForm: Form = { label: '', type: 'stock', job: '', grade: '0', ownerId: '', blip: '' };
+const emptyForm: Form = { label: '', type: 'stock', job: '', grade: '0', ownerId: '', blip: '', ped: '' };
 
 const toForm = (store: AdminStore): Form => ({
   id: store.id,
@@ -36,6 +38,7 @@ const toForm = (store: AdminStore): Form => ({
   grade: String(store.grade),
   ownerId: '',
   blip: store.blip !== undefined && store.blip !== null ? String(store.blip) : '',
+  ped: store.ped || '',
 });
 
 const StoreAdmin: React.FC<{ stores: AdminStore[]; onUpdate: (stores: AdminStore[]) => void }> = ({
@@ -63,6 +66,7 @@ const StoreAdmin: React.FC<{ stores: AdminStore[]; onUpdate: (stores: AdminStore
     grade: parseInt(form.grade, 10) || 0,
     ownerId: form.ownerId ? parseInt(form.ownerId, 10) : undefined,
     blip: form.blip !== '' ? parseInt(form.blip, 10) : undefined,
+    ped: form.ped.trim() || undefined,
   });
 
   const save = async () => {
@@ -155,6 +159,10 @@ const StoreAdmin: React.FC<{ stores: AdminStore[]; onUpdate: (stores: AdminStore
             <input type="text" {...field('blip')} />
           </label>
         </div>
+        <label>
+          <span>{t('ui_store_ped', 'Shopkeeper model')}</span>
+          <input type="text" maxLength={64} {...field('ped')} placeholder="mp_m_shopkeep_01" />
+        </label>
         <div className="store-cart-footer">
           <button className="store-pay" onClick={save}>
             {form.id ? t('ui_store_save', 'Save') : t('ui_store_new', 'New store here')}

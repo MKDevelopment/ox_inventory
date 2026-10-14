@@ -242,9 +242,10 @@ if not LoadResourceFile(shared.resource, 'web/build/index.html') then
 end
 
 -- No we're not going to support qtarget any longer.
-if shared.target and GetResourceState('ox_target') ~= 'started' then
+-- tgiann-target provides the ox_target API (and exports under that name)
+if shared.target and GetResourceState('ox_target') ~= 'started' and GetResourceState('tgiann-target') ~= 'started' then
     shared.target = false
-    warn('ox_target is not loaded - it should start before ox_inventory')
+    warn('ox_target (or tgiann-target) is not loaded - it should start before ox_inventory')
 end
 
 if lib.context == 'server' then

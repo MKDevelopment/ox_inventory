@@ -170,7 +170,7 @@
   "ui_store_owner": "Owner (player id)",
   "ui_store_blip": "Blip sprite",
   "ui_store_save": "Save",
-  "ui_store_move": "Move here",
+  "ui_store_move": "Shopkeeper here",
   "ui_store_delete": "Delete",
   "ui_store_close": "Close",
   "ui_store_unlimited": "Unlimited",
@@ -258,5 +258,8 @@
   "ui_store_no_payment": "You have no cash or card on you.",
   "store_payment_invalid": "This payment method is no longer available",
   "store_card_frozen": "This card is blocked",
-  "store_card_no_access": "You have no access to the account of this card"
+  "store_card_no_access": "You have no access to the account of this card",
+  "store_target_shop": "Shop",
+  "store_target_manage": "Manage store",
+  "ui_store_ped": "Shopkeeper model"
 }
