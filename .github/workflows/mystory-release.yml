@@ -9,8 +9,12 @@ name: MyStory release
 #  - pushing a tag mystory-v*, or running the workflow manually.
 on:
   push:
+    # branches must be listed too: with only `tags`, pushes to branches never trigger the workflow
+    branches:
+      - "**"
     tags:
       - "mystory-v*"
+    # ignored for tag pushes
     paths:
       - MYSTORY_VERSION
   workflow_dispatch:
