@@ -6,6 +6,7 @@ require 'modules.clothing.client'
 require 'modules.sort.client'
 require 'modules.metadata.client'
 require 'modules.stores.client'
+require 'modules.wallet.client'
 
 local Utils = require 'modules.utils.client'
 local Weapon = require 'modules.weapon.client'

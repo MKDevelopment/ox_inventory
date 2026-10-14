@@ -1854,3 +1854,69 @@ body.inv-dragging {
   font-weight: 800;
   letter-spacing: 0.12em;
 }
+
+.wallet-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: linear-gradient(180deg, $accentColorSoft, transparent);
+  border: 1px solid $borderColor;
+  border-radius: 12px;
+}
+
+.wallet-cash {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  span {
+    color: $mutedTextColor;
+    font-size: 12px;
+  }
+  strong {
+    color: $sunsetColor;
+    font-family: $headingFont;
+    font-size: 20px;
+    font-weight: 600;
+  }
+}
+
+.wallet-actions {
+  display: flex;
+  gap: 6px;
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 32px;
+    padding: 0 10px;
+    background: $nightColor;
+    border: 1px solid $borderColor;
+    border-radius: 8px;
+    color: $textColor;
+    font-family: $mainFont;
+    outline: none;
+    &:focus {
+      border-color: $accentColor;
+    }
+  }
+  button {
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid $borderColor;
+    border-radius: 8px;
+    background: $secondaryColorHighlight;
+    color: $textColor;
+    font-family: $mainFont;
+    font-weight: 500;
+    cursor: pointer;
+    &:first-of-type {
+      border-color: $accentColorLight;
+      background: linear-gradient(180deg, $accentColorLight, $accentColor);
+      color: #fff;
+    }
+    &:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+  }
+}

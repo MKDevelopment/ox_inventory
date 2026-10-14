@@ -8,6 +8,7 @@ import { useIntersection } from '../../hooks/useIntersection';
 import { Items } from '../../store/items';
 import { Locale } from '../../store/locale';
 import { SearchIcon } from '../mystory/icons';
+import WalletPanel from '../mystory/WalletPanel';
 
 const PAGE_SIZE = 30;
 
@@ -24,6 +25,14 @@ const InventoryGrid: React.FC<{ inventory: Inventory }> = ({ inventory }) => {
   const containerRef = useRef(null);
   const { ref, entry } = useIntersection({ threshold: 0.5 });
   const isBusy = useAppSelector((state) => state.inventory.isBusy);
+  // an open wallet shows its cash, read live from the wallet item in the player's inventory
+  const wallet = useAppSelector((state) =>
+    inventory.type === 'container'
+      ? state.inventory.leftInventory.items.find(
+          (item) => item.name === 'wallet' && item.metadata?.container === inventory.id
+        )
+      : undefined
+  );
 
   useEffect(() => {
     if (entry && entry.isIntersecting) {
@@ -72,6 +81,7 @@ const InventoryGrid: React.FC<{ inventory: Inventory }> = ({ inventory }) => {
             onChange={(event) => setSearch(event.target.value)}
           />
         </label>
+        {wallet && <WalletPanel slot={wallet.slot} cash={Number(wallet.metadata?.cash) || 0} />}
       </header>
       <div className="other-grid" ref={containerRef}>
         {items.map((item, index) => (
