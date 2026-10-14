@@ -8,10 +8,10 @@ return {
 	-- Pocket wardrobe in the Clothing tab: carried garments, no weight, outside the main slots.
 	wardrobe = { slots = 20 },
 
-	-- Garment photos (tgiann-clothing config.showClotheImg), built from the garment's first part.
-	-- Placeholders: {gender} (male/female), {category} (component/prop), {id}, {collection}, {index},
-	-- {texture}. nil shows the item image.
-	image = nil,
+	-- Garment photos from tgiann-clothing-images (e.g. female_c_bag_10_3.webp), built from the garment's
+	-- first part. Placeholders: {gender} (male/female), {item} (c_bag, ...), {category} (component/prop),
+	-- {id}, {collection}, {index}, {texture}. nil shows the item image; a missing photo falls back to it.
+	image = 'https://cfx-nui-tgiann-clothing-images/images/{gender}_{item}_{index}_{texture}.webp',
 
 	-- Item used for whole outfits; it may contain any parts.
 	set = 'clothe_set',

@@ -26,12 +26,14 @@ export const garmentParts = (metadata?: Record<string, any>): GarmentPart[] =>
     : [];
 
 /** Photo of a tgiann-clothing garment, built from its first part; undefined without a template. */
-export const garmentImageUrl = (metadata?: Record<string, any>) => {
+export const garmentImageUrl = (metadata?: Record<string, any>, name?: string) => {
   const part = garmentParts(metadata)[0];
-  if (!template || !part) return;
+  const gender = garmentGender(metadata?.model);
+  if (!template || !part || !gender || part.data.index < 0) return;
 
   const values: Record<string, unknown> = {
-    gender: garmentGender(metadata?.model) ?? '',
+    gender,
+    item: metadata?.clotheType || name || '',
     category: part.category,
     id: part.id,
     collection: part.data.collection ?? '',

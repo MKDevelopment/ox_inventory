@@ -164,7 +164,7 @@ const getRawItemUrl = (item: string | SlotWithItem) => {
 
 // a garment's own photo when it exists, otherwise the item image
 export const getItemUrl = (item: string | SlotWithItem) => {
-  const garment = typeof item === 'object' ? garmentImageUrl(item.metadata) : undefined;
+  const garment = typeof item === 'object' ? garmentImageUrl(item.metadata, item.name) : undefined;
   if (garment && !imageFailed(garment)) return garment;
 
   return withImageFallback(getRawItemUrl(item));
