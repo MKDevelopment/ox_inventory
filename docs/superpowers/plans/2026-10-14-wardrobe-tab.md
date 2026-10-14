@@ -41,4 +41,4 @@
 - [ ] Build, oxfmt; Playwright screenshot with mocked equipment and wardrobe; commit.
 
 ### Task 4: Release
-- [ ] All suites, final review (fresh reviewer), fix pass, `MYSTORY_VERSION` 1.3.0.
+- [x] All suites, final review (fresh reviewer), fix pass, `MYSTORY_VERSION` 1.3.0.
