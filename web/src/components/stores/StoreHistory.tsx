@@ -6,7 +6,7 @@ type Sale = {
   buyer_name?: string;
   items: Array<{ name: string; count: number; price: number }>;
   total: number;
-  method: 'cash' | 'bank';
+  method: string;
   time: number;
 };
 

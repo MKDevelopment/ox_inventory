@@ -110,7 +110,7 @@ RegisterNUICallback('storeClose', function(_, cb)
 end)
 
 RegisterNUICallback('storeCheckout', function(data, cb)
-	local success, result = lib.callback.await('ox_inventory:checkoutStore', false, data.id, data.cart, data.method)
+	local success, result = lib.callback.await('ox_inventory:checkoutStore', false, data.id, data.cart, data.payment)
 
 	if success then
 		lib.notify({ type = 'success', description = locale('store_paid', result) })

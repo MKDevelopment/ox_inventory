@@ -249,5 +249,14 @@
   "ui_wallet_deposit": "Put in",
   "ui_wallet_withdraw": "Take out",
   "ui_wallet_amount": "Amount",
-  "ui_best_before": "Best before"
+  "ui_best_before": "Best before",
+  "ui_store_card_personal": "Personal card",
+  "ui_store_card_business": "Business card",
+  "ui_store_card_frozen": "Card blocked",
+  "ui_store_card_no_access": "No access to this account",
+  "ui_store_after": "Left after paying",
+  "ui_store_no_payment": "You have no cash or card on you.",
+  "store_payment_invalid": "This payment method is no longer available",
+  "store_card_frozen": "This card is blocked",
+  "store_card_no_access": "You have no access to the account of this card"
 }

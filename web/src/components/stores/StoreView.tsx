@@ -16,12 +16,21 @@ export type StoreManagement = {
   items: Array<{ name: string; price: number; enabled: boolean; stock: number }>;
 };
 
+export type PaymentOption = {
+  id: string;
+  kind: 'cash' | 'personal' | 'business';
+  label?: string;
+  last4?: string;
+  balance: number;
+  disabled?: 'frozen' | 'no_access';
+};
+
 export type StoreData = {
   id: number;
   label: string;
   products: StoreProduct[];
   management?: StoreManagement;
-  methods: Array<'cash' | 'bank'>;
+  payments: PaymentOption[];
 };
 
 export const t = (key: string, fallback: string) => Locale[key] || fallback;
@@ -30,11 +39,45 @@ export const money = (value: number) => `$${value.toLocaleString('en-US')}`;
 
 export const itemLabel = (name: string) => Items[name]?.label || name;
 
+const paymentTitle = (option: PaymentOption) => {
+  if (option.kind === 'cash') return t('ui_store_cash', 'Cash');
+  const kind =
+    option.kind === 'business'
+      ? t('ui_store_card_business', 'Business card')
+      : t('ui_store_card_personal', 'Personal card');
+  return option.label ? `${kind} · ${option.label}` : kind;
+};
+
+const PaymentTile: React.FC<{ option: PaymentOption; active: boolean; short: boolean; onSelect: () => void }> = ({
+  option,
+  active,
+  short,
+  onSelect,
+}) => (
+  <button
+    className={`store-payment ${option.kind}${active ? ' active' : ''}${short ? ' short' : ''}`}
+    disabled={!!option.disabled}
+    onClick={onSelect}
+  >
+    <span className="store-payment-title">{paymentTitle(option)}</span>
+    {option.last4 && <span className="store-payment-number">•••• {option.last4}</span>}
+    <span className="store-payment-balance">
+      {option.disabled === 'frozen'
+        ? t('ui_store_card_frozen', 'Card blocked')
+        : option.disabled === 'no_access'
+          ? t('ui_store_card_no_access', 'No access to this account')
+          : money(option.balance)}
+    </span>
+  </button>
+);
+
 const StoreView: React.FC<{ store: StoreData; onUpdate: (store: StoreData) => void }> = ({ store, onUpdate }) => {
   useImageFallback();
   const [tab, setTab] = useState<'shop' | 'manage'>('shop');
   const [cart, setCart] = useState<Record<string, number>>({});
-  const [method, setMethod] = useState(store.methods[0] || 'cash');
+  const [paymentId, setPaymentId] = useState<string | undefined>(
+    () => store.payments.find((option) => !option.disabled)?.id
+  );
   const [search, setSearch] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -62,19 +105,26 @@ const StoreView: React.FC<{ store: StoreData; onUpdate: (store: StoreData) => vo
 
   const lines = Object.entries(cart).filter(([name]) => stockOf(name));
   const total = lines.reduce((sum, [name, count]) => sum + (stockOf(name)?.price || 0) * count, 0);
+  const payment = store.payments.find((option) => option.id === paymentId && !option.disabled);
+  const canPay = !!payment && lines.length > 0 && payment.balance >= total;
 
   const pay = async () => {
-    if (busy || lines.length === 0) return;
+    if (busy || !canPay) return;
     setBusy(true);
 
     const response = await fetchNui<{ success: boolean; store?: StoreData }>('storeCheckout', {
       id: store.id,
       cart: Object.fromEntries(lines),
-      method,
+      payment: paymentId,
     });
 
     if (response?.success) setCart({});
-    if (response?.store) onUpdate(response.store);
+    if (response?.store) {
+      onUpdate(response.store);
+      if (!response.store.payments.some((option) => option.id === paymentId && !option.disabled)) {
+        setPaymentId(response.store.payments.find((option) => !option.disabled)?.id);
+      }
+    }
     setBusy(false);
   };
 
@@ -160,7 +210,9 @@ const StoreView: React.FC<{ store: StoreData; onUpdate: (store: StoreData) => vo
                   <img src={getItemUrl(name)} alt="" />
                   <div>
                     <p>{itemLabel(name)}</p>
-                    <span>{money((stockOf(name)?.price || 0) * count)}</span>
+                    <span>
+                      {count} × {money(stockOf(name)?.price || 0)} = <b>{money((stockOf(name)?.price || 0) * count)}</b>
+                    </span>
                   </div>
                   <div className="store-stepper">
                     <button onClick={() => setCount(name, count - 1)}>−</button>
@@ -180,16 +232,30 @@ const StoreView: React.FC<{ store: StoreData; onUpdate: (store: StoreData) => vo
               <span>{t('ui_store_total', 'Total')}</span>
               <strong>{money(total)}</strong>
             </div>
-            {store.methods.length > 1 && (
-              <div className="store-methods">
-                {store.methods.map((m) => (
-                  <button key={m} className={method === m ? 'active' : undefined} onClick={() => setMethod(m)}>
-                    {m === 'cash' ? t('ui_store_cash', 'Cash') : t('ui_store_bank', 'Card')}
-                  </button>
+            {store.payments.length === 0 ? (
+              <p className="store-no-payment">{t('ui_store_no_payment', 'You have no cash or card on you.')}</p>
+            ) : (
+              <div className="store-payments">
+                {store.payments.map((option) => (
+                  <PaymentTile
+                    key={option.id}
+                    option={option}
+                    active={option.id === paymentId}
+                    short={option.balance < total}
+                    onSelect={() => setPaymentId(option.id)}
+                  />
                 ))}
               </div>
             )}
-            <button className="store-pay" disabled={busy || lines.length === 0} onClick={pay}>
+            {payment && (
+              <div className="store-after">
+                <span>{t('ui_store_after', 'Left after paying')}</span>
+                <strong className={payment.balance < total ? 'short' : undefined}>
+                  {money(payment.balance - total)}
+                </strong>
+              </div>
+            )}
+            <button className="store-pay" disabled={busy || !canPay} onClick={pay}>
               {t('ui_store_pay', 'Pay')} {total > 0 && money(total)}
             </button>
           </div>

@@ -249,5 +249,14 @@
   "ui_wallet_deposit": "Włóż",
   "ui_wallet_withdraw": "Wyjmij",
   "ui_wallet_amount": "Kwota",
-  "ui_best_before": "Najlepiej spożyć przed"
+  "ui_best_before": "Najlepiej spożyć przed",
+  "ui_store_card_personal": "Karta osobista",
+  "ui_store_card_business": "Karta firmowa",
+  "ui_store_card_frozen": "Karta zablokowana",
+  "ui_store_card_no_access": "Brak dostępu do konta",
+  "ui_store_after": "Zostanie po zapłacie",
+  "ui_store_no_payment": "Nie masz przy sobie gotówki ani karty.",
+  "store_payment_invalid": "Ta metoda płatności nie jest już dostępna",
+  "store_card_frozen": "Ta karta jest zablokowana",
+  "store_card_no_access": "Nie masz dostępu do konta tej karty"
 }
