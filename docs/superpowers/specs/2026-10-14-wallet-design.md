@@ -51,6 +51,23 @@ trunk, drop, another container or another player does not count for this player.
   and that the player can carry the withdrawn cash.
 - Logged with the existing inventory logging (`lib.logger`) like other money moves.
 
+## Theft protection
+
+`data/wallet.lua` holds the wallet settings:
+
+```lua
+return {
+    slots = 10,
+    -- who may take a wallet out of another player's inventory (robbing, /steal, searching):
+    -- false = nobody, 'police' = only jobs in inventory:police (rcore_police searches), true = anyone
+    steal = 'police',
+}
+```
+
+A `swapItems` hook blocks moving a `wallet` out of a player inventory that is not the source's own
+unless `steal` allows it, and tells the thief why (locale `wallet_cannot_steal`). The owner can
+still drop, give or store their own wallet. Loose cash and other items are unaffected.
+
 ## Display
 
 - Wallet tooltip: "Cash: $X" through the metadata display keys (`data/metadata.lua`).
@@ -76,7 +93,10 @@ trunk, drop, another container or another player does not count for this player.
 - `bun run build`, `oxfmt --check`, Lua syntax check.
 - Playwright screenshot of an open wallet with cards and the cash panel.
 
-## Out of scope
+## Out of scope (next step)
 
+- Card or cash payment prompt for MyStory's own systems: a server export that asks the player
+  whether to pay by card or cash and charges the right account (cash through the wallet-aware
+  `RemoveItem`, card through the stores bank adapter). Designed separately after the wallet ships.
 - tgg-banking integration beyond holding its card items (cards keep working as tgg-banking items).
 - Black money in wallets.
