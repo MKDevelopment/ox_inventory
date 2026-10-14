@@ -5,6 +5,9 @@ return {
 	-- Command that opens the "take off" menu.
 	command = 'clothing',
 
+	-- Pocket wardrobe in the Clothing tab: carried garments, no weight, outside the main slots.
+	wardrobe = { slots = 20 },
+
 	-- Item used for whole outfits; it may contain any parts.
 	set = 'clothe_set',
 

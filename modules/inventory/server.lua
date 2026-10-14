@@ -1253,6 +1253,12 @@ function Inventory.AddItem(inv, item, count, metadata, slot, cb)
 
 	if not inv?.slots then return false, 'invalid_inventory' end
 
+	-- e.g. garments given to a player go to their pocket wardrobe (modules/clothing)
+	if not slot and Inventory.redirectAdd then
+		local target = Inventory.redirectAdd(inv, item)
+		if target and target ~= inv then return Inventory.AddItem(target, item, count, metadata, nil, cb) end
+	end
+
 	local toSlot, slotMetadata, slotCount
 	local success, response = false
 	local invokingResource = server.loglevel > 1 and GetInvokingResource()

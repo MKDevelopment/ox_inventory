@@ -128,6 +128,71 @@ local function remember(source, parts)
 	end
 end
 
+-- Pocket wardrobe: an owner-bound stash for carried garments (no weight, outside the main slots)
+local WARDROBE = 'wardrobe'
+local wardrobeSlots = config.wardrobe?.slots or 20
+
+exports.ox_inventory:RegisterStash(WARDROBE, locale('clothing_wardrobe'), wardrobeSlots, 1000000, true)
+
+---@return boolean
+local function isGarment(name)
+	return config.items[name] ~= nil or name == config.set
+end
+
+---@return OxInventory?
+local function getWardrobe(inv)
+	return inv?.owner and Inventory({ id = WARDROBE, owner = inv.owner }) or nil
+end
+
+---Where a garment given to `inv` goes: its wardrobe when that has room, else the inventory itself.
+local function garmentTarget(inv)
+	local wardrobe = getWardrobe(inv)
+	return wardrobe and Inventory.GetEmptySlot(wardrobe) and wardrobe or inv
+end
+
+local warming = {}
+
+-- garments added to a player by any resource (e.g. tgiann-clothing shops) land in the wardrobe;
+-- AddItem must not wait on the database, so an unloaded wardrobe is loaded in the background
+function Inventory.redirectAdd(inv, item)
+	if not inv.player or not inv.owner or not isGarment(item.name) then return end
+
+	local wardrobe = Inventory(('%s:%s'):format(WARDROBE, inv.owner))
+
+	if not wardrobe then
+		if not warming[inv.owner] then
+			local owner = inv.owner
+			warming[owner] = true
+			CreateThread(function()
+				getWardrobe(inv)
+				warming[owner] = nil
+			end)
+		end
+
+		return
+	end
+
+	if Inventory.GetEmptySlot(wardrobe) then return wardrobe end
+end
+
+-- only garments go into a wardrobe
+exports.ox_inventory:registerHook('swapItems', function(payload)
+	local to = payload.toInventory
+
+	if type(to) == 'string' and to:find('^wardrobe:') and type(payload.fromSlot) == 'table' and not isGarment(payload.fromSlot.name) then
+		return false
+	end
+end, { inventoryFilter = { '^wardrobe:' } })
+
+-- a wardrobe opens only for its owner (owner stashes accept an owner from the client)
+exports.ox_inventory:registerHook('openInventory', function(payload)
+	local id = payload.inventoryId
+	if type(id) ~= 'string' or not id:find('^wardrobe:') then return end
+
+	local inv = Inventory(payload.source)
+	if not inv or id ~= ('%s:%s'):format(WARDROBE, inv.owner) then return false end
+end, { inventoryFilter = { '^wardrobe:' } })
+
 ---@return table metadata in the tgiann-clothing format
 local function garmentMetadata(name, parts, model)
 	return { version = 'ox', data = parts, model = model, clotheType = name, type = 'clothe' }
@@ -142,13 +207,17 @@ end
 
 ---Puts the garment in `slotId` on: the item is removed and what the ped wore in its place (reported
 ---by the client as { item, parts } per garment, validated here) comes back as items.
-lib.callback.register('ox_inventory:clothing:wear', function(source, slotId, worn)
+lib.callback.register('ox_inventory:clothing:wear', function(source, slotId, worn, fromWardrobe)
 	if math.type(slotId) ~= 'integer' or type(worn) ~= 'table' or onCooldown(source) then return false end
 
 	local inv = getPlayer(source)
 	if not inv then return false end
 
-	local slot = Inventory.GetSlot(inv, slotId)
+	-- the garment comes from the pocket or from the player's own wardrobe
+	local from = fromWardrobe == true and getWardrobe(inv) or inv
+	if not from then return false end
+
+	local slot = Inventory.GetSlot(from, slotId)
 	if not slot or (not config.items[slot.name] and slot.name ~= config.set) then return false end
 
 	local metadata = slot.metadata or {}
@@ -196,18 +265,30 @@ lib.callback.register('ox_inventory:clothing:wear', function(source, slotId, wor
 	end
 
 	-- the garment's own slot frees up; every other returned garment needs a free slot
-	if #returned > 1 then
+	if #returned > 1 and from == inv then
 		local _, _, emptySlots = Inventory.GetItemSlots(inv, slot.name)
-		if (emptySlots or 0) < #returned - 1 then return false, 'cannot_carry' end
+		local wardrobe = getWardrobe(inv)
+		local free = (emptySlots or 0)
+
+		if wardrobe then
+			for i = 1, wardrobeSlots do
+				if not wardrobe.items[i] then free += 1 end
+			end
+		end
+
+		if free < #returned - 1 then return false, 'cannot_carry' end
 	end
 
-	if not Inventory.RemoveItem(inv, slot.name, 1, nil, slotId) then return false end
+	if not Inventory.RemoveItem(from, slot.name, 1, nil, slotId) then return false end
 
 	for i = 1, #returned do
-		if not Inventory.AddItem(inv, returned[i].name, 1, returned[i].metadata) then
+		local target = garmentTarget(inv)
+		returned[i].target = target
+
+		if not Inventory.AddItem(target, returned[i].name, 1, returned[i].metadata) then
 			-- undo: take back what was already given and return the garment
-			for j = 1, i - 1 do Inventory.RemoveItem(inv, returned[j].name, 1, returned[j].metadata) end
-			Inventory.AddItem(inv, slot.name, 1, metadata, slotId)
+			for j = 1, i - 1 do Inventory.RemoveItem(returned[j].target, returned[j].name, 1, returned[j].metadata) end
+			Inventory.AddItem(from, slot.name, 1, metadata, slotId)
 			return false, 'cannot_carry'
 		end
 	end
@@ -218,7 +299,7 @@ lib.callback.register('ox_inventory:clothing:wear', function(source, slotId, wor
 end)
 
 ---Takes a garment off into an item; the client strips the ped once this returns true.
-lib.callback.register('ox_inventory:clothing:takeOff', function(source, itemName, parts)
+lib.callback.register('ox_inventory:clothing:takeOff', function(source, itemName, parts, toSlot)
 	local def = type(itemName) == 'string' and config.items[itemName]
 	if not def or onCooldown(source) then return false end
 
@@ -242,10 +323,20 @@ lib.callback.register('ox_inventory:clothing:takeOff', function(source, itemName
 	end
 
 	local metadata = garmentMetadata(itemName, parts, model)
+	local wardrobe = getWardrobe(inv)
+	local added = false
 
-	if not Inventory.CanCarryItem(inv, itemName, 1, metadata) or not Inventory.AddItem(inv, itemName, 1, metadata) then
-		return false, 'cannot_carry'
+	-- into the chosen wardrobe slot, else the first free wardrobe slot, else the pocket
+	if wardrobe and math.type(toSlot) == 'integer' and toSlot >= 1 and toSlot <= wardrobeSlots and not wardrobe.items[toSlot] then
+		added = Inventory.AddItem(wardrobe, itemName, 1, metadata, toSlot)
 	end
+
+	if not added then
+		local target = garmentTarget(inv)
+		added = (target ~= inv or Inventory.CanCarryItem(inv, itemName, 1, metadata)) and Inventory.AddItem(target, itemName, 1, metadata)
+	end
+
+	if not added then return false, 'cannot_carry' end
 
 	-- the client puts "nothing" on these parts
 	local naked = config.naked[modelKey(model)] or {}

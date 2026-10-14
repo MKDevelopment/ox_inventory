@@ -275,5 +275,14 @@
   "ui_doc_grade": "Grade",
   "ui_doc_badge": "Badge number",
   "ui_doc_serial": "Serial number",
-  "clothing_unavailable": "Your appearance could not be read, try again in a moment"
+  "clothing_unavailable": "Your appearance could not be read, try again in a moment",
+  "clothing_wardrobe": "Wardrobe",
+  "ui_clothing": "Clothing",
+  "ui_clothing_worn": "Worn",
+  "ui_clothing_wardrobe": "Wardrobe",
+  "ui_clothing_nothing": "Nothing",
+  "ui_clothing_rotate": "Drag to turn",
+  "ui_clothing_zoom_head": "Head",
+  "ui_clothing_zoom_body": "Body",
+  "ui_clothing_zoom_feet": "Feet"
 }

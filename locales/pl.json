@@ -275,5 +275,14 @@
   "ui_doc_grade": "Stopień",
   "ui_doc_badge": "Nr odznaki",
   "ui_doc_serial": "Nr seryjny",
-  "clothing_unavailable": "Nie udało się odczytać wyglądu postaci, spróbuj za chwilę"
+  "clothing_unavailable": "Nie udało się odczytać wyglądu postaci, spróbuj za chwilę",
+  "clothing_wardrobe": "Szafa",
+  "ui_clothing": "Ubrania",
+  "ui_clothing_worn": "Na sobie",
+  "ui_clothing_wardrobe": "Szafa",
+  "ui_clothing_nothing": "Brak",
+  "ui_clothing_rotate": "Przeciągnij, aby obrócić",
+  "ui_clothing_zoom_head": "Głowa",
+  "ui_clothing_zoom_body": "Sylwetka",
+  "ui_clothing_zoom_feet": "Buty"
 }
